@@ -1,27 +1,28 @@
 import { Router, Request, Response } from "express";
-import db from "../config/datebase";
-import WordInstance from "../model/index";
-import { v4 as uuidv4 } from "uuid";
+
 import WordValidator from "../validator/index";
 import Middleware from "../middleware/index";
-
-db.sync().then(() => console.log("db is ready"));
+import WordInstance from "../model/index";
+import { v4 as uuidv4 } from "uuid";
+import server from "../server";
+import { ERouter } from "../main";
 
 export const wordsRouter = Router({});
 
 wordsRouter.get(
   "/",
   WordValidator.checkReadWord(),
+
   Middleware.checkValidationResult,
   async (
-    // Типизировать параметрі реквеста нужно тут
+    // Типизировать параметры реквеста нужно тут
     req: Request & { query: { limit?: number; offset?: number } },
     res: Response
   ) => {
     console.log(req.body);
     try {
-      // А тут нужно указать параметры по умолчанию, если вдруг параметрі не прилетели,
-      // если они выше валидируються то типы можно указать соответственно
+      // А тут нужно указать параметры по умолчанию, если вдруг параметры не прилетели,
+      // если они выше валидируються то типы можно указать соответственно без ?
       const limit = req.query?.limit || 10;
       const offset = req.query?.limit || 0;
 
