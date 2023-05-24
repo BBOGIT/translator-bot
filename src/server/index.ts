@@ -11,6 +11,7 @@ export class Server {
   constructor(args: { port: number }) {
     this.port = args.port;
     this.app = express();
+    this.init();
   }
 
   async init() {
@@ -29,7 +30,3 @@ export class Server {
     console.log("db is ready");
   }
 }
-
-const server = new Server({ port: 1889 });
-
-export default server;

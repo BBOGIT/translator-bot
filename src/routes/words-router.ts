@@ -4,8 +4,6 @@ import WordValidator from "../validator/index";
 import Middleware from "../middleware/index";
 import WordInstance from "../model/index";
 import { v4 as uuidv4 } from "uuid";
-import server from "../server";
-import { ERouter } from "../main";
 
 export const wordsRouter = Router({});
 

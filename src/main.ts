@@ -1,6 +1,6 @@
 import { webhookRouter } from "./routes/webhook-router";
 import { wordsRouter } from "./routes/words-router";
-import server from "./server";
+import { Server } from "./server";
 
 // Старайся всі строки писати як енуми чи константи
 // Десь в папці комон
@@ -10,7 +10,7 @@ export enum ERouter {
 }
 
 async function bootstrap() {
-  server.init();
+  const server = new Server({ port: 1889 });
 
   server.app.use(ERouter.WORDS, wordsRouter);
   server.app.use(ERouter.WEBHOOK, webhookRouter);
