@@ -12,8 +12,9 @@ export enum ERouter {
 async function bootstrap() {
   const server = new Server({ port: 1889 });
 
+  // Не зміг нормально типізувати, тож можна так і так
   server.app.use(ERouter.WORDS, wordsRouter);
-  server.app.use(ERouter.WEBHOOK, webhookRouter);
+  server.use(ERouter.WEBHOOK, webhookRouter);
 
   await server.initDb();
 

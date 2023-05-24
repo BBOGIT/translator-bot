@@ -24,6 +24,10 @@ export class Server {
     });
   }
 
+  use(...handlers) {
+    return this.app.use(...handlers);
+  }
+
   async initDb() {
     await db.sync();
 
