@@ -12,7 +12,7 @@ class WordInstance extends Model<WordAttributes> {}
 WordInstance.init(
   {
     id: {
-      type: DataTypes.UUIDV4,
+      type: DataTypes.UUID,
       primaryKey: true,
       allowNull: false,
     },
