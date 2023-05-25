@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
 
-// For focker
+// For docker db
 // const db = new Sequelize("postgres", "postgres", "postgres", {
 //   host: "localhost",
 //   port: 5440,
