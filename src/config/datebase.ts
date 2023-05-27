@@ -8,4 +8,3 @@ const db = new Sequelize('words-db', '', '', {
 
 export default db;
 
-/Users/bohdanbuhriienko/Documents/Lessons/itkamas/src/config/datebase.ts
