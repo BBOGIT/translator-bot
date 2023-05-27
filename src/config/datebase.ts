@@ -1,10 +1,17 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize } from "sequelize";
 
-const db = new Sequelize('words-db', '', '', {
-    host: './dev.sqlite',  
-    dialect: 'sqlite',
-    logging: false
-})
+// For docker db
+// const db = new Sequelize("postgres", "postgres", "postgres", {
+//   host: "localhost",
+//   port: 5440,
+//   dialect: "postgres",
+//   logging: console.log,
+// });
+
+const db = new Sequelize("words-db", "", "", {
+  host: "./dev.sqlite",
+  dialect: "sqlite",
+  logging: console.log,
+});
 
 export default db;
-

@@ -1,31 +1,34 @@
-import { DataTypes, Model } from 'sequelize';
-import db from '../config/datebase';
+import { DataTypes, Model } from "sequelize";
+import db from "../config/datebase";
 
 interface WordAttributes {
-    id: string;
-    word: string;
-    translation: string;
+  id: string;
+  word: string;
+  translation: string;
 }
 
-class WordInstance extends Model<WordAttributes> { }
+class WordInstance extends Model<WordAttributes> {}
 
-WordInstance.init({
+WordInstance.init(
+  {
     id: {
-        type: DataTypes.UUIDV4,
-        primaryKey: true,
-        allowNull: false
+      type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false,
     },
     word: {
-        type: DataTypes.STRING,
-        allowNull: false
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     translation: {
-        type: DataTypes.STRING,
-        allowNull: false
-    }
-}, {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
     sequelize: db,
-    tableName: 'words'
-})
+    tableName: "words", // Використовуй енумы
+  }
+);
 
 export default WordInstance;
