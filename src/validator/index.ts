@@ -1,6 +1,6 @@
 import { body, param, query } from "express-validator";
 
-class WordValidator {
+class Validator {
   checkCreateWord() {
     return [body("word").notEmpty().isString().isLength({ min: 1 })];
   }
@@ -30,4 +30,4 @@ class WordValidator {
   }
 }
 
-export default new WordValidator();
+export default new Validator();
