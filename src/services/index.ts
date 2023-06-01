@@ -1,3 +1,26 @@
+export enum ETelegramBodyType{
+  MESSAGE = 'message',
+  IMAGE ='image'
+}
+export interface TelegramMessageBody {}
+
+async function handleTelegramMessage(args: TelegramMessageBody){
+  // const parsedData = parseTelegramBody(args)
+  const parsedData ={
+     chatId: '',
+     lang: '',
+     text: '',
+     webhookType: '',
+     firstName: '',
+     lastName: '',
+  }
+
+  // save to db
+  // get from db
+  // TODO
+
+}
+
 async function TelegramWebhook({ body }) {
     let chatId: string;
     let lang: string;
@@ -6,12 +29,24 @@ async function TelegramWebhook({ body }) {
     let firstName: string;
     let lastName: string;
   
+    
+    //  TODO get type of webhook file, message, video, etc...
+
+    switch(body.type){
+      case ETelegramBodyType.MESSAGE: {
+          handleTelegramMessage(body)
+          break
+      }
+      case ETelegramBodyType.IMAGE: {}
+    }
+
     switch (true) {
       case !!body.message: {
         chatId = String(body.message.from.id);
         firstName = body.message.from.first_name ?? null;
         lastName = body.message.from.last_name ?? null;
         lang = body.message.from.language_code;
+
         switch (true) {
           case !!body.message.location: {
             text = `${body.message.location.latitude},${body.message.location.longitude}`;
