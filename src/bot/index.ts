@@ -1,41 +1,49 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import { IConfigService } from "../config/config.interface";
 import { User } from "../routes";
 require('dotenv').config()
+
 const { TOKEN } = process.env
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`
 
 
 export class Bot {
     chatId: string;
-    text: string;
+    text: string; 
     firstName: string;
     lastName: string;
+    // telegramUrl: string;
+    telegramApi: AxiosInstance;
 
     constructor(options) {
         this.chatId = options.chatId;
         this.text = options.text;
         this.firstName = options.firstName;
         this.lastName = options.lastName;
+        // this.telegramUrl = `https://api.telegram.org/bot${TOKEN}`
+        this.telegramApi = axios.create({
+            baseURL: `https://api.telegram.org/bot${TOKEN}`
+        })
         }
 
-    checkState() {
+ async    checkState() {
         const userInstance = new User({});
         userInstance.firstName = this.firstName ?? " ";
         userInstance.lastName = this.lastName ?? " ";
         userInstance.chatId = this.chatId;
 
-        userInstance.getUser().then((data) => {
+const data = await userInstance.getUser()
+
             if (!data) {
-                    axios.post(`${TELEGRAM_API}/sendMessage`, {
+                this.telegramApi.post(`sendMessage`, {
                         chat_id: this.chatId,
                         text: `Hello, ${userInstance.firstName} ${userInstance.lastName}!`
                     });
                     userInstance.state = 'welcome';
-                    userInstance.createUser();
+                 await   userInstance.createUser();
             } else {
                 if (this.text === '/start') {
-                    axios.post(`${TELEGRAM_API}/sendMessage`, {
+                    axios.post(`sendMessage`, {
                         chat_id: this.chatId,
                         text: `I'm a bot, please talk to me!`
                     });
@@ -54,7 +62,7 @@ export class Bot {
                         text: `Your word is ${this.text}`
                     });
                     userInstance.state = 'waiting_for_translation';
-                    userInstance.updateUser();
+                  await  userInstance.updateUser();
                 } else 
                 if (data.state === 'waiting_for_translation') {
                     axios.post(`${TELEGRAM_API}/sendMessage`, {
@@ -62,10 +70,15 @@ export class Bot {
                         text: `Your translation is ${this.text}`
                     });
                     userInstance.state = 'waiting_for_word';
-                    userInstance.updateUser();
+                   await userInstance.updateUser();
                 }
             } 
-            })
+            
+        }
+
+
+        handleSomeState(){
+
         }
     }
 
