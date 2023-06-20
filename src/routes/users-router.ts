@@ -13,6 +13,7 @@ export class User {
   chatId: string;
   state: string;
 
+  // ТУДУ типізація опцій
   constructor(options) {
     this.firstName = options.firstName;
     this.lastName = options.lastName;

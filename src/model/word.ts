@@ -7,7 +7,7 @@ interface WordAttributes {
   translation: string;
 }
 
-class WordInstance extends Model<WordAttributes> {}
+class WordInstance extends Model<WordAttributes> { }
 
 WordInstance.init(
   {
@@ -27,7 +27,7 @@ WordInstance.init(
   },
   {
     sequelize: db,
-    tableName: "words", // Використовуй енумы
+    tableName: "words", // ТУДУ: Використовуй енумы
   }
 );
 

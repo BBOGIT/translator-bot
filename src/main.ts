@@ -4,7 +4,7 @@ import { usersRouter } from "./routes/users-router";
 import { Server } from "./server";
 
 
-// Старайся всі строки писати як енуми чи константи
+// ТУДУ: Старайся всі строки писати як енуми чи константи
 // Десь в папці комон
 export enum ERouter {
   WORDS = "/words",
