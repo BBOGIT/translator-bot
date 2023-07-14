@@ -5,9 +5,12 @@ interface WordAttributes {
   id: string;
   word: string;
   translation: string;
+  language: string;
 }
 
-class WordInstance extends Model<WordAttributes> {}
+class WordInstance extends Model<WordAttributes> {
+    translation: string;
+}
 
 WordInstance.init(
   {
@@ -21,6 +24,10 @@ WordInstance.init(
       allowNull: false,
     },
     translation: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    language: {
       type: DataTypes.STRING,
       allowNull: false,
     },

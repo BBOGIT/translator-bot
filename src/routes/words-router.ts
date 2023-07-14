@@ -7,6 +7,54 @@ import { v4 as uuidv4 } from "uuid";
 
 export const wordsRouter = Router({});
 
+export class Word {
+  id: string;
+  word: string;
+  translation: string;
+  language: string;
+
+  constructor(options) {
+    this.id = options.id;
+    this.word = options.word;
+    this.translation = options.translation;
+    this.language = options.language;
+  }
+
+  async getWord() {
+    const word = await WordInstance.findOne({ where: { id: this.id } });
+    return word;
+  }
+
+  async getWordByText() {
+    const word = await WordInstance.findOne({ where: { word: this.word } });
+    return word;
+  }
+
+  async createWord() {
+    const word = await WordInstance.create({
+      id: this.id,
+      word: this.word,
+      translation: this.translation,
+      language: this.language,
+    });
+    return word;
+  }
+
+  async updateWord() {
+    const word = await WordInstance.findOne({ where: { id: this.id } });
+    if (!word) {
+      return null;
+    }
+    const updatedWord = await word.update({
+      word: this.word,
+      translation: this.translation,
+      language: this.language,
+    });
+    return updatedWord;
+
+  }
+}
+
 wordsRouter.get(
   "/",
   Validator.checkReadWord(),

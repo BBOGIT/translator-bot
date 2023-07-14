@@ -8,17 +8,17 @@ export const webhookRouter = Router({});
 // Роутер === Контроллер
 // Контроллер повинен мати декілька роутів
 
-const TelegramWebhook = require('../services');
+const telegramWebhook = require('../services/webhook-handler');
 
 webhookRouter.post("/", async (req: Request, res: Response) => {
 
   res.status(200).json('ok');
 
-  await TelegramWebhook(req).then((data) => {
+  await telegramWebhook(req).then((data) => {
     console.log(data);
 
     // Створення екземпляру класу Bot
-    const bot = new Bot({ chatId: data.chatId, text: data.text, firstName: data.firstName, lastName: data.lastName });
+    const bot = new Bot({ chatId: data.chatId, text: data.text, firstName: data.firstName, lastName: data.lastName, lang: data.lang, channel: data.channel });
     // Виклик методу checkState()
     bot.checkState();
 
