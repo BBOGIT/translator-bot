@@ -52,11 +52,13 @@ export class Bot {
                         case 'waiting_for_word':
                             let translation = "";
                          //шукаємо слово в бд
-                            const word = new Word({ text: this.text });
+                            const word = new Word({ word: this.text });
+                            try {
                             await word.getWordByText().then(async (data) => {
                                 if (!data) {
                                     //якщо слова немає в бд, то отримуємо переклад з openai
                                     const gpt = new GetAnswer({ question: this.text });
+                                    
                                     await gpt.gptResponse().then((data) => {
                                          translation = data;
                                     });
@@ -64,11 +66,15 @@ export class Bot {
                                     word.createWord().then(async (data) => {
                                         console.log("word created", data);
                                     });
+                                    
                                 } else {
                                     //якщо слово є в бд, то отримуємо переклад з бд
                                     translation = data.translation;
                                 }
                             });
+                        } catch (e) {
+                            console.log("чек помилки ", e)
+                        }
                                         
                                 this.sendMessage('translation', {"translation": translation});
                                 userInstance.state = 'main_menu';

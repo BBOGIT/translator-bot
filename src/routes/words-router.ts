@@ -31,8 +31,9 @@ export class Word {
   }
 
   async createWord() {
+    const id = uuidv4();
     const word = await WordInstance.create({
-      id: this.id,
+      id: id,
       word: this.word,
       translation: this.translation,
       language: this.language,

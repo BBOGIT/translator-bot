@@ -9,7 +9,10 @@ interface WordAttributes {
 }
 
 class WordInstance extends Model<WordAttributes> {
-    translation: string;
+  id: string;
+  word: string;
+  translation: string;
+  language: string;
 }
 
 WordInstance.init(
