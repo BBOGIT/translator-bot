@@ -1,0 +1,32 @@
+[
+    {
+        "name": "welcomeMessage",
+        "description": "welcomeMessage",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{welcomeMessageText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "mainMenu",
+        "description": "mainMenu",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{mainMenuText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repitWordsButton}}\",\"callback_data\":\"/repitWords\"}, {\"text\":\"{{learnWordsButton}}\",\"callback_data\":\"/learnWords\"}], [{\"text\":\"{{myProgressButton}}\",\"callback_data\":\"/myProgress\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "waitingForWord",
+        "description": "waitingForWord",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{waitingForWordText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "waitingForTranslation",
+        "description": "waitingForTranslation",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{waitingForTranslationText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "translation",
+        "description": "translation",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{translationnText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iKnowWordButton}}\",\"callback_data\":\"/iKnowWord\"}, {\"text\":\"{{learnWordButton}}\",\"callback_data\":\"/learnWord\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    }
+]
