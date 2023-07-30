@@ -13,7 +13,7 @@ export enum ERouter {
 }
 
 async function bootstrap() {
-  const server = new Server({ port: 1889 });
+  const server = new Server({ port: +process.env.PORT || 1889 });
 
   // Не зміг нормально типізувати, тож можна так і так
   server.app.use(ERouter.WORDS, wordsRouter);
