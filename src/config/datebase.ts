@@ -8,9 +8,15 @@ import { Sequelize } from "sequelize";
 //   logging: console.log,
 // });
 
-const db = new Sequelize("words-db", "", "", {
-  host: "./dev.sqlite",
-  dialect: "sqlite",
+// const db = new Sequelize("words-db", "", "", {
+//   host: "./dev.sqlite",
+//   dialect: "sqlite",
+//   logging: console.log,
+// });
+
+const db = new Sequelize("prpzjkjp", "prpzjkjp", "9BRIlIjXcQvxEtw0zO33pPvl_EZHhZha", {
+  host: 'trumpet.db.elephantsql.com', 
+  dialect: 'postgres',
   logging: console.log,
 });
 
