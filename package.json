@@ -10,7 +10,8 @@
     "prebuild": "rimraf dist",
     "build": "npx tsc",
     "postinstall": "tsc",
-    "start": "ts-node ./src/main.ts",
+    "start": "node ./dist/main.js",
+    "start:dev": "ts-node ./src/main.ts",
     "start:prod": "npm run build && node ./dist/src/main.js",
     "start:watch": "npm run build && nodemon"
   },
