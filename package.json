@@ -3,9 +3,13 @@
   "version": "0.0.3",
   "description": "",
   "main": "./dist/main.js",
+  "engines": {
+    "node": "16.x"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "npx tsc",
+    "postinstall": "tsc",
     "start": "ts-node ./src/main.ts",
     "start:prod": "npm run build && node ./dist/src/main.js",
     "start:watch": "npm run build && nodemon"
