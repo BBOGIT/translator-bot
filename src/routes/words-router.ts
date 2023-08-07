@@ -12,12 +12,14 @@ export class Word {
   word: string;
   translation: string;
   language: string;
+  needToLearn: boolean;
 
   constructor(options) {
     this.id = options.id;
     this.word = options.word;
     this.translation = options.translation;
     this.language = options.language;
+    this.needToLearn = options.needToLearn;
   }
 
   async getWord() {
@@ -37,6 +39,7 @@ export class Word {
       word: this.word,
       translation: this.translation,
       language: this.language,
+      needToLearn: this.needToLearn
     });
     return word;
   }
@@ -50,6 +53,7 @@ export class Word {
       word: this.word,
       translation: this.translation,
       language: this.language,
+      needToLearn: this.needToLearn
     });
     return updatedWord;
 
