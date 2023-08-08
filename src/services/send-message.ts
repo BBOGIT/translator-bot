@@ -1,5 +1,7 @@
 import axios from "axios";
 import { IConfigService } from "../config/config.interface";
+import attribute from './attributes.json'
+import templates from './message-templates.json'
 require('dotenv').config()
 const { TOKEN } = process.env
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`
