@@ -6,6 +6,7 @@ interface WordAttributes {
   word: string;
   translation: string;
   language: string;
+  needToLearn: boolean;
 }
 
 class WordInstance extends Model<WordAttributes> {
@@ -13,6 +14,7 @@ class WordInstance extends Model<WordAttributes> {
   word: string;
   translation: string;
   language: string;
+  needToLearn: boolean;
 }
 
 WordInstance.init(
@@ -34,6 +36,11 @@ WordInstance.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    needToLearn: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    }
   },
   {
     sequelize: db,

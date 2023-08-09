@@ -12,7 +12,7 @@
         "uk": "Мій прогрес"
     },
     "welcomeMessageText": {
-        "uk": "Вітаю, ${firstName} ${lastName}!"
+        "uk": "Вітаю, {{firstName}} {{lastName}}"
     },
     "waitingForTranslationText": {
         "uk": "Відправ, будь-ласка, переклад тексту"
@@ -31,5 +31,17 @@
     },
     "mainMenuButton": {
         "uk": "Головне меню"
+    },
+    "unknownLanguageText": {
+        "uk": "Невідома мова"
+    },
+    "savedWordText": {
+        "uk": "Зберіг слово для вивчення"
+    },
+    "iknowWordText": {
+        "uk": "Окей, це круто :)"
+    },
+    "chatId": {
+        "uk": ""
     }
 }

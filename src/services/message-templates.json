@@ -27,6 +27,24 @@
         "name": "translation",
         "description": "translation",
         "channel": "telegram",
-        "body": "{\"text\":\"{{translationnText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iKnowWordButton}}\",\"callback_data\":\"/iKnowWord\"}, {\"text\":\"{{learnWordButton}}\",\"callback_data\":\"/learnWord\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+        "body": "{\"text\":\"{{translationnText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iKnowWordButton}}\",\"callback_data\":\"/iKnowWord_{{wordId}}\"}, {\"text\":\"{{learnWordButton}}\",\"callback_data\":\"/learnWord_{{wordId}}\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "unknownLanguage",
+        "description": "unknownLanguage",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{unknownLanguageText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "savedWord",
+        "description": "savedWord",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{savedWordText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "iknowWord",
+        "description": "iknowWord",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{iknowWordText}}\",\"chat_id\":\"{{chatId}}\"}"
     }
 ]
