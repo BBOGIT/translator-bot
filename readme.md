@@ -1,12 +1,4 @@
-1. Встановити ноду
-2. Встановити пакети `npm i`
-3. Можливо встановити тайпскрипт глобально чи розширення в редактор
-4. запуск `npm run start:watch`
+A bot for translating and learning English words. 
+The translation is provided via Chat GPT.
 
-БОГДАН ТУДУ: додати претіер, лінтер, логер
-
-Запуск бд з докеру. Потрібно щоб докер був встановленний та запущенний.
-`docker-compose up -d`
-
-TODO зробити докербілд апки
-TODO додати білд в docker-compose
+Вот URL: t.me/your_translator_bot
