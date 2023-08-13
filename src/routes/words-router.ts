@@ -13,6 +13,8 @@ export class Word {
   translation: string;
   language: string;
   needToLearn: boolean;
+  limit: number;
+  offset: number;
 
   constructor(options) {
     this.id = options.id;
@@ -20,6 +22,17 @@ export class Word {
     this.translation = options.translation;
     this.language = options.language;
     this.needToLearn = options.needToLearn;
+    this.limit = options.limit;
+    this.offset = options.offset;
+  }
+
+  async getWords() {
+    const limit = this.limit || 10;
+    let offset = this.offset || 0;
+    //offset = (offset - 1) * limit;
+
+    const words = await WordInstance.findAll({ where: {}, offset, limit });
+    return words;
   }
 
   async getWord() {
@@ -75,7 +88,7 @@ wordsRouter.get(
       // А тут нужно указать параметры по умолчанию, если вдруг параметры не прилетели,
       // если они выше валидируються то типы можно указать соответственно без ?
       const limit = req.query?.limit || 10;
-      const offset = req.query?.limit || 0;
+      const offset = req.query?.offset || 0;
 
       const data = await WordInstance.findAll({ where: {}, limit, offset });
       return res.status(200).json({ data });

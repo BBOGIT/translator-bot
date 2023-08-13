@@ -8,10 +8,9 @@ class Validator {
   checkReadWord() {
     return [
       query("limit")
-        .notEmpty()
-        .withMessage("limit is required")
-        .isInt({ min: 1, max: 10 })
-        .withMessage("limit must be between 1 and 10"),
+        .optional()
+        .isInt({ min: 1, max: 30 })
+        .withMessage("limit must be between 1 and 30"),
       query("offset")
         .optional()
         .isNumeric()

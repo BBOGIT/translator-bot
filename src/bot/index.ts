@@ -3,7 +3,7 @@ import { User, Word } from "../routes";
 import { Message } from "../services/send-message";
 import { GetAnswer } from "../services/openai";
 
-const mainMenuCommands = ['/learnWords']
+const mainMenuCommands = ['/mainMenu', '/learnWords', '/repeatWords', '/repeatWordsNow', '/repeatWordsSchedule']
 export class Bot {
     chatId: string;
     text: string;
@@ -52,34 +52,89 @@ export class Bot {
 
         userInstance.getUser().then(async (data) => {
             if (!data) {
+
                 this.sendMessage('welcomeMessage', {firstName: this.firstName, lastName: this.lastName});
                 this.sendMessage('mainMenu');
                 console.log("welcomeMessage ", this.firstName, this.lastName);
-                userInstance.state = 'mainMenu';
+                userInstance.state = 'main_menu';
                 await userInstance.createUser(); 
+
             } else {
-                console.log("state", data.state);
+                console.log("STATE: ", data.state);
+
                 if (mainMenuCommands.includes(this.text)){
                 switch (this.text) {
+                    case '/mainMenu':
+                        this.sendMessage('mainMenu');
+                        userInstance.state = 'main_menu';
+                        await userInstance.updateUser();
+                        break;
                     case '/learnWords':
                         this.sendMessage('waitingForWord');
                         userInstance.state = 'waiting_for_word';
                         await userInstance.updateUser();
                         break;
+                    case '/repeatWords':
+                        this.sendMessage('repeatWords');
+                        userInstance.state = 'repeat_word_main_menu';
+                        await userInstance.updateUser();
+                        break;
+
+                    case '/repeatWordsNow':
+                        const limit = 1;
+                        const offset = 0;
+
+                        const getAllwords = new Word({ limit, offset });
+
+                        const words = await getAllwords.getWords();
+                        
+                        if (words.length > 0) {
+
+                        const word = words[0].word;
+                        const wordId = words[0].id;
+
+                        this.sendMessage('checkTranslation', {word});
+                        userInstance.state = `repeatWords_${offset}_${wordId}`;
+                        await userInstance.updateUser();
+                        } else {
+                            this.sendMessage('notFoundWords');
+                            userInstance.state = `main_menu`;
+                            await userInstance.updateUser();
+                            this.sendMessage('mainMenu');
+                        }
+                        break;
+
+                    case '/repeatWordsSchedule':
+                        this.sendMessage('repeatWords');
+                        userInstance.state = 'repeat_word_main_menu';
+                        await userInstance.updateUser();
+                        break;
                 }
             } else {
-                    switch (data.state) {
+                function categorize(state) {
+                    if (state.includes('repeatWords_')) {
+                      return 'repeatWords';
+                    } else if (state.includes('checkAnswer_')) {
+                      return 'checkAnswer';
+                    } else {
+                    return state;
+                    }
+                  }
+
+                  let state = categorize(data.state);
+                  
+                    switch (state) {
                         case 'waiting_for_word':
                             let translation = "";
                             let wordId = "";
                          //шукаємо слово в бд
-                            const word = new Word({ word: this.text });
+                           const word = new Word({ word: this.text });
                             try {
                             await word.getWordByText().then(async (data) => {
                                 if (!data) {
                                     //якщо слова немає в бд, то отримуємо переклад з openai
                                     const lang = this.detectAlphabet(this.text);
-                                    console.log("detectAlphabet lang: ", lang);
+     
                                     if (lang == "uk" || lang == "en") {
                                     const gpt = new GetAnswer({ question: this.text, lang: lang });
                                     
@@ -111,12 +166,76 @@ export class Bot {
                             console.log("чек помилки ", e)
                             translation = "Переклад не знайдений або сталася помилка"
                         }
-                        console.log(`wordIdwordIdwordIdwordIdwordIdwordIdwordId ${wordId}`);
 
                         this.sendMessage('translation', {"translation": translation, "wordId": wordId});
                         userInstance.state = 'translation';
                         await userInstance.updateUser();
                         break;
+
+
+                        case ('repeatWords'):
+                            const offsetForRepeat = data.state.split("_")[1] ?? 0;
+                            const wordIdForRepeat = data.state.split("_")[2];
+                            const wordById = new Word({ id: wordIdForRepeat });
+
+                            await wordById.getWord().then(async (data) => {
+                                if (!data) {
+                                    this.sendMessage('unknownWord');
+                                    this.sendMessage('mainMenu');
+                                    userInstance.state = 'main_menu';
+                                    await userInstance.updateUser();
+                                } else {
+                                    if (data.id == wordIdForRepeat) {
+
+                                        if (this.text.includes(data.translation.toLowerCase())) { 
+                                            this.sendMessage('correctAnswer', {word: data.word, translation: data.translation, yourVariant: this.text});
+                                        } else {
+                                            this.sendMessage('incorrectAnswer', {word: data.word, translation: data.translation, yourVariant: this.text});
+                                        }
+
+                                        userInstance.state = `checkAnswer_${offsetForRepeat}_${wordIdForRepeat}`;
+                                        await userInstance.updateUser();
+                                    } else {
+                                        this.sendMessage('unknownWord');
+                                        this.sendMessage('mainMenu');
+                                        userInstance.state = 'main_menu';
+                                        await userInstance.updateUser();
+                                    }
+                                }
+                            });
+                            break;
+                            case ('checkAnswer'):
+                                const wordIdForAnswer = data.state.split("_")[2];
+                                if (this.text.includes('/willLearn')) {
+                                    const wordToUpdate = new Word({ id: wordIdForAnswer, needToLearn: true });
+                                    await wordToUpdate.updateWord();  
+                                } else if (this.text.includes('/learnedWord')) {
+                                const wordToUpdate = new Word({ id: wordIdForAnswer, needToLearn: false });
+                                await wordToUpdate.updateWord();
+                                }
+
+                                    const limit = 1;
+                                    const answerOffset = ++data.state.split("_")[1] ?? 0;
+            
+                                    const getAllWords = new Word({ limit, offset: answerOffset });
+
+                                    const words = await getAllWords.getWords();
+
+                                    if (words.length > 0) {
+                                    const wordForAnswer = words[0].word;
+                                    const newWordId = words[0].id;
+                                    console.log("answerOffset", answerOffset, "wordForAnswer", wordForAnswer, "getAllWords", getAllWords )
+                                    this.sendMessage('checkTranslation', {word: wordForAnswer});
+                                    userInstance.state = `repeatWords_${answerOffset}_${newWordId}`;
+                                    await userInstance.updateUser();
+                                } else {
+                                    this.sendMessage('notFoundWords');
+                                    userInstance.state = `main_menu`;
+                                    await userInstance.updateUser();
+                                    this.sendMessage('mainMenu');
+                                }
+                            break;
+
 
                         case 'translation':
 
@@ -124,14 +243,17 @@ export class Bot {
                             this.sendMessage('savedWord');
                             const wordToUpdate = new Word({ id: this.text.split("_")[1], needToLearn: true });
                             await wordToUpdate.updateWord();
+                            
                             } else if (this.text.includes('/iKnowWord')) {
                             this.sendMessage('iknowWord');
                             const wordToUpdate = new Word({ id: this.text.split("_")[1], needToLearn: false });
                             await wordToUpdate.updateWord();
+
                             }
 
                             userInstance.state = 'main_menu';
                             await userInstance.updateUser();
+                            this.sendMessage('mainMenu');
                             break;
                         default:
                             this.sendMessage('mainMenu');
