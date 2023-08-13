@@ -126,7 +126,7 @@ export class Message {
         attributes.chatId[this.lang] = this.chatId;
         let templateAttributes = {};
         if (!isObjectEmpty(this.templateAttributes)) { templateAttributes = this.templateAttributes; }
-        console.log('templateAttributes)))))))))))))))', templateAttributes)
+
         let filledTemplate = fillTemplateAttributes(template.body.toString(), attributes, this.lang, templateAttributes);
 
         if (!isObjectEmpty(this.templateAttributes)) {
@@ -145,7 +145,7 @@ export class Message {
           }
 
         } catch (err) {
-          console.error("Message: ", err);
+          console.error("Помилка при відправці повідомлення: ", err);
         }
     }
     

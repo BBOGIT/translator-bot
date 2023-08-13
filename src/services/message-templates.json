@@ -9,7 +9,7 @@
         "name": "mainMenu",
         "description": "mainMenu",
         "channel": "telegram",
-        "body": "{\"text\":\"{{mainMenuText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repitWordsButton}}\",\"callback_data\":\"/repitWords\"}, {\"text\":\"{{learnWordsButton}}\",\"callback_data\":\"/learnWords\"}], [{\"text\":\"{{myProgressButton}}\",\"callback_data\":\"/myProgress\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+        "body": "{\"text\":\"{{mainMenuText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repitWordsButton}}\",\"callback_data\":\"/repeatWords\"}, {\"text\":\"{{learnWordsButton}}\",\"callback_data\":\"/learnWords\"}], [{\"text\":\"{{myProgressButton}}\",\"callback_data\":\"/myProgress\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
     },
     {
         "name": "waitingForWord",
@@ -46,5 +46,35 @@
         "description": "iknowWord",
         "channel": "telegram",
         "body": "{\"text\":\"{{iknowWordText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "repeatWords",
+        "description": "repeatWords",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{repeatWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"callback_data\":\"/repeatWordsNow\"}, {\"text\":\"{{repeatWordsScheduleButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "checkTranslation",
+        "description": "checkTranslation",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{checkTranslationText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "notFoundWords",
+        "description": "notFoundWords",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{notFoundWordsText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "correctAnswer",
+        "description": "correctAnswer",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{correctAnswerText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{willLearnButton}}\",\"callback_data\":\"/willLearn\"}, {\"text\":\"{{learnedWordButton}}\",\"callback_data\":\"/learnedWord\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "incorrectAnswer",
+        "description": "incorrectAnswer",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{incorrectAnswerText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{willLearnButton}}\",\"callback_data\":\"/willLearn\"}, {\"text\":\"{{learnedWordButton}}\",\"callback_data\":\"/learnedWord\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
     }
 ]

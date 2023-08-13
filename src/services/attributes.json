@@ -41,6 +41,33 @@
     "iknowWordText": {
         "uk": "Окей, це круто :)"
     },
+    "repeatWordsText": {
+        "uk": "Можемо почати повторення слів прямо зараз, або обери коли тобі буде зручно"
+    },
+    "repeatWordsNowButton": {
+        "uk": "Повторити слова прямо зараз"
+    },
+    "repeatWordsScheduleButton": {
+        "uk": "Вказати коли нагадати"
+    },
+    "checkTranslationText": {
+        "uk": "Напишіть переклад слова {{word}}"
+    },
+    "notFoundWordsText": {
+        "uk": "Більше немає слів на повторення"
+    },
+    "correctAnswerText": {
+        "uk": "Вірно.\n\nВаш варіант: {{yourVariant}}\n\n{{word}} - {{translation}}"
+    },
+    "incorrectAnswerText": {
+        "uk": "Невірно\n\nВаш варіант: {{yourVariant}}\n\n{{word}} - {{translation}}"
+    },
+    "willLearnButton": {
+        "uk": "Ще буду повторювати"
+    },
+    "learnedWordButton": {
+        "uk": "Вивчив слово"
+    },
     "chatId": {
         "uk": ""
     }
