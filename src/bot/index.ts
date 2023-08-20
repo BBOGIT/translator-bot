@@ -1,9 +1,10 @@
 import axios from "axios";
-import { User, Word } from "../routes";
+import { User, Word, Notification } from "../routes";
 import { Message } from "../services/send-message";
 import { GetAnswer } from "../services/openai";
 
-const mainMenuCommands = ['/mainMenu', '/learnWords', '/repeatWords', '/repeatWordsNow', '/repeatWordsSchedule']
+const mainMenuCommands = ['/start', '/mainMenu', '/learnWords', '/repeatWords', '/repeatWordsNow', '/repeatWordsSchedule', '/repeatWordsScheduleMonth', '/repeatWordsScheduleWeek']
+
 export class Bot {
     chatId: string;
     text: string;
@@ -50,12 +51,14 @@ export class Bot {
         userInstance.lastName = this.lastName ?? " ";
         userInstance.chatId = this.chatId;
 
+        const notificationInstance = new Notification({});
+
         userInstance.getUser().then(async (data) => {
             if (!data) {
 
                 this.sendMessage('welcomeMessage', {firstName: this.firstName, lastName: this.lastName});
                 this.sendMessage('mainMenu');
-                console.log("welcomeMessage ", this.firstName, this.lastName);
+
                 userInstance.state = 'main_menu';
                 await userInstance.createUser(); 
 
@@ -64,6 +67,7 @@ export class Bot {
 
                 if (mainMenuCommands.includes(this.text)){
                 switch (this.text) {
+                    case '/start':
                     case '/mainMenu':
                         this.sendMessage('mainMenu');
                         userInstance.state = 'main_menu';
@@ -105,9 +109,75 @@ export class Bot {
                         break;
 
                     case '/repeatWordsSchedule':
-                        this.sendMessage('repeatWords');
+                        notificationInstance.userId = data.id;
+                        notificationInstance.getNotification().then(async (notificationData) => {
+                            let remindInMonthParam = "❌";
+                            let remindInWeekParam = "❌";
+
+                            if (notificationData) {
+                                if (notificationData.remindInMonth) remindInMonthParam = "✅"
+                                if (notificationData.remindInWeek) remindInWeekParam = "✅"
+                            }
+
+                            this.sendMessage('repeatWordsSchedule', {remindInMonthParam, remindInWeekParam});
+                        });
+                        
                         userInstance.state = 'repeat_word_main_menu';
                         await userInstance.updateUser();
+                        break;
+                    
+                    case '/repeatWordsScheduleWeek':
+                        notificationInstance.userId = data.id;
+                        notificationInstance.getNotification().then(async (notificationData) => {
+                            let remindInMonthParam = "❌";
+                            let remindInWeekParam = "❌";
+                            if (!notificationData) {
+                                notificationInstance.remindInMonth = false;
+                                notificationInstance.remindInWeek = true;
+                                await notificationInstance.createNotification();
+                                remindInWeekParam = "✅";
+                            } else {
+
+                                if (!notificationData.remindInWeek) {
+                                    remindInWeekParam = "✅";
+                                    notificationInstance.remindInWeek = true;
+                                } else {
+                                    notificationInstance.remindInWeek = false;
+                                }
+                                await notificationInstance.updateNotification();
+
+                                if (notificationData.remindInMonth) remindInMonthParam = "✅"
+                            }
+                            this.sendMessage('repeatWordsSchedule', {remindInMonthParam, remindInWeekParam});
+                        });
+                        break;
+
+                    case '/repeatWordsScheduleMonth':
+                        notificationInstance.userId = data.id;
+                        notificationInstance.getNotification().then(async (notificationData) => {
+                            let remindInMonthParam = "❌";
+                            let remindInWeekParam = "❌";
+                            if (!notificationData) {
+
+                                notificationInstance.remindInMonth = true;
+                                notificationInstance.remindInWeek = false;
+                                await notificationInstance.createNotification();
+                                 remindInMonthParam = "✅";
+                            } else {
+                                 
+                                 if (!notificationData.remindInMonth) {
+                                    remindInMonthParam = "✅";
+                                    notificationInstance.remindInMonth = true;
+                                 } else {
+                                        notificationInstance.remindInMonth = false;
+                                    }
+                                    await notificationInstance.updateNotification();
+                                    
+                                if (notificationData.remindInWeek) remindInWeekParam = "✅"
+                            }
+                            this.sendMessage('repeatWordsSchedule', {remindInMonthParam, remindInWeekParam});
+                        });
+
                         break;
                 }
             } else {

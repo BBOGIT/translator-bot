@@ -76,5 +76,11 @@
         "description": "incorrectAnswer",
         "channel": "telegram",
         "body": "{\"text\":\"{{incorrectAnswerText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{willLearnButton}}\",\"callback_data\":\"/willLearn\"}, {\"text\":\"{{learnedWordButton}}\",\"callback_data\":\"/learnedWord\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "repeatWordsSchedule",
+        "description": "repeatWordsSchedule",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{repeatWordsScheduleText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsScheduleWeekButton}}\",\"callback_data\":\"/repeatWordsScheduleWeek\"}, {\"text\":\"{{repeatWordsScheduleMonthButton}}\",\"callback_data\":\"/repeatWordsScheduleMonth\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
     }
 ]
