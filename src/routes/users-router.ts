@@ -12,12 +12,14 @@ export class User {
   lastName: string;
   chatId: string;
   state: string;
+  userId: string;
 
   constructor(options) {
     this.firstName = options.firstName;
     this.lastName = options.lastName;
     this.chatId = options.chatId;
     this.state = options.state;
+    this.userId = options.userId;
   }
 
   async createUser() {
@@ -39,6 +41,15 @@ export class User {
   async getUser() {
     try {
       const data = await UserInstance.findOne({ where: { chatId: this.chatId } });
+      return data;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getUserById() {
+    try {
+      const data = await UserInstance.findOne({ where: { id: this.userId } });
       return data;
     } catch (error) {
       return error;

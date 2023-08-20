@@ -68,6 +68,15 @@
     "learnedWordButton": {
         "uk": "Вивчив слово"
     },
+    "repeatWordsScheduleText": {
+        "uk": "Вкажіть коли нагадати про повторення.\n\nПри виборі раз на тиждень - повідомлення будут відправлятись кожного понеділка в 18:00.\nПри виборі раз на місяць - повідомлення будуть відправлятись кожного першого числа місяця в 18:00."
+    },
+    "repeatWordsScheduleWeekButton": {
+        "uk": "{{remindInWeekParam}} Нагадувати раз на тиждень"
+    },
+    "repeatWordsScheduleMonthButton": {
+        "uk": "{{remindInMonthParam}} Нагадувати раз на місяць"
+    },
     "chatId": {
         "uk": ""
     }
