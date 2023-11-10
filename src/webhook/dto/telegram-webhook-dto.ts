@@ -153,7 +153,7 @@ class TelegramWebhookBodyDto {
   edited_message?: EditedMessageDto;
 }
 
-class TelegramWebhookResponseDto {
+class WebhookResponseDto {
   @IsString()
   chatId: string;
 
@@ -191,5 +191,5 @@ export {
   CallbackQueryDto,
   EditedMessageDto,
   TelegramWebhookBodyDto,
-  TelegramWebhookResponseDto
+  WebhookResponseDto
 };

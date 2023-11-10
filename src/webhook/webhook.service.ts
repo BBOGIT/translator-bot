@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   TelegramWebhookBodyDto,
-  TelegramWebhookResponseDto
+  WebhookResponseDto
 } from './dto';
 import {
   WebhookTypeEnum,
@@ -108,16 +108,15 @@ export class WebhookService {
       }
     }
 
-    const responseDto: TelegramWebhookResponseDto =
-      {
-        chatId,
-        lang,
-        webhookType,
-        text,
-        firstName,
-        lastName,
-        channel
-      };
+    const responseDto: WebhookResponseDto = {
+      chatId,
+      lang,
+      webhookType,
+      text,
+      firstName,
+      lastName,
+      channel
+    };
 
     await this.botService.checkState(responseDto);
 

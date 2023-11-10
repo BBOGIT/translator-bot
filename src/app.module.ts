@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { BotModule } from './bot/bot.module';
 import { CustomerModule } from './customer/customer.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { CustomerModule } from './customer/customer.module';
     PrismaModule,
     BotModule,
     WebhookModule,
-    CustomerModule
+    CustomerModule,
+    MessageModule
   ]
 })
 export class AppModule {}
