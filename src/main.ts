@@ -1,28 +1,16 @@
-import { webhookRouter } from "./routes/webhook-router";
-import { wordsRouter } from "./routes/words-router";
-import { usersRouter } from "./routes/users-router";
-import { Server } from "./server";
-
-
-// Старайся всі строки писати як енуми чи константи
-// Десь в папці комон
-export enum ERouter {
-  WORDS = "/words",
-  WEBHOOK = "/webhook",
-  USERS = "/users",
-}
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-  const server = new Server({ port: +process.env.PORT || 1889 });
-
-  // Не зміг нормально типізувати, тож можна так і так
-  server.app.use(ERouter.WORDS, wordsRouter);
-  server.use(ERouter.WEBHOOK, webhookRouter);
-  server.use(ERouter.USERS, usersRouter);
-
-  await server.initDb();
-
-  server.listen();
+  const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true
+    })
+  );
+  app.setGlobalPrefix('api');
+  app.enableVersioning();
+  await app.listen(1889);
 }
-
 bootstrap();
