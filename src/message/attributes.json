@@ -1,0 +1,83 @@
+{
+    "mainMenuText": {
+        "uk": "Введіть слово або речення яке ви б хотіли перекласти або оберіть один із пунктів меню:"
+    },
+    "repitWordsButton": {
+        "uk": "Повторити слова"
+    },
+    "learnWordsButton": {
+        "uk": "Вивчити нові слова"
+    },
+    "myProgressButton": {
+        "uk": "Мій прогрес"
+    },
+    "welcomeMessageText": {
+        "uk": "Вітаю, {{firstName}} {{lastName}}"
+    },
+    "waitingForTranslationText": {
+        "uk": "Відправ, будь-ласка, переклад тексту"
+    },
+    "translationnText": {
+        "uk": "Переклад: {{translation}}"
+    },
+    "waitingForWordText": {
+        "uk": "Відправ, будь-ласка, слово чи речення"
+    },
+    "iKnowWordButton": {
+        "uk": "Знаю слово"
+    },
+    "learnWordButton": {
+        "uk": "Вивчити слово"
+    },
+    "mainMenuButton": {
+        "uk": "Головне меню"
+    },
+    "unknownLanguageText": {
+        "uk": "Невідома мова"
+    },
+    "savedWordText": {
+        "uk": "Зберіг слово для вивчення"
+    },
+    "iknowWordText": {
+        "uk": "Окей, це круто :)"
+    },
+    "repeatWordsText": {
+        "uk": "Можемо почати повторення слів прямо зараз, або обери коли тобі буде зручно"
+    },
+    "repeatWordsNowButton": {
+        "uk": "Повторити слова прямо зараз"
+    },
+    "repeatWordsScheduleButton": {
+        "uk": "Вказати коли нагадати"
+    },
+    "checkTranslationText": {
+        "uk": "Напишіть переклад слова {{word}}"
+    },
+    "notFoundWordsText": {
+        "uk": "Більше немає слів на повторення"
+    },
+    "correctAnswerText": {
+        "uk": "Вірно.\n\nВаш варіант: {{yourVariant}}\n\n{{word}} - {{translation}}"
+    },
+    "incorrectAnswerText": {
+        "uk": "Невірно\n\nВаш варіант: {{yourVariant}}\n\n{{word}} - {{translation}}"
+    },
+    "willLearnButton": {
+        "uk": "Ще буду повторювати"
+    },
+    "learnedWordButton": {
+        "uk": "Вивчив слово"
+    },
+    "repeatWordsScheduleText": {
+        "uk": "Вкажіть коли нагадати про повторення.\n\nПри виборі раз на тиждень - повідомлення будут відправлятись кожного понеділка в 18:00.\nПри виборі раз на місяць - повідомлення будуть відправлятись кожного першого числа місяця в 18:00."
+    },
+    "repeatWordsScheduleWeekButton": {
+        "uk": "{{remindInWeekParam}} Нагадувати раз на тиждень"
+    },
+    "repeatWordsScheduleMonthButton": {
+        "uk": "{{remindInMonthParam}} Нагадувати раз на місяць"
+    },
+    "chatId": {
+        "uk": ""
+    }
+}

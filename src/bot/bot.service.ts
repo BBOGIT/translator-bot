@@ -46,7 +46,7 @@ export class BotService {
             await this.messageService.TelegramSendMessage(
               {
                 chatId: dto.chatId,
-                text: 'Default Message'
+                templateName: 'mainMenu'
               }
             );
             break;
