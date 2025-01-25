@@ -10,13 +10,55 @@ import { Prisma } from '@prisma/client';
 @Injectable()
 export class WordService {
   constructor(private prisma: PrismaService) {}
+  async getLearnedWordsWithPagination(
+    customerId: number,
+    page = 1,
+    limit = 10
+  ) {
+    const words = await this.prisma.word.findMany(
+      {
+        where: {
+          customerId,
+          needToLearn: false
+        },
+        orderBy: {
+          updatedAt: 'desc'
+        },
+        take: limit,
+        skip: (page - 1) * limit,
+        select: {
+          id: true,
+          word: true,
+          translation: true,
+          updatedAt: true
+        }
+      }
+    );
+
+    const total = await this.prisma.word.count({
+      where: {
+        customerId,
+        needToLearn: false
+      }
+    });
+
+    return {
+      words,
+      total,
+      pages: Math.ceil(total / limit)
+    };
+  }
   async getWord(dto: GetWordDto) {
     const word =
       await this.prisma.word.findUnique({
         where: {
-          word: dto.word
+          customerId_word: {
+            customerId: dto.customerId,
+            word: dto.word
+          }
         }
       });
+
     if (!word) {
       throw new NotFoundException(
         'Word not found'
@@ -25,13 +67,15 @@ export class WordService {
     return word;
   }
 
-  async createWord(dto: CreateWordDto) {
+  public async createWord(dto: CreateWordDto) {
     try {
       const word = await this.prisma.word.create({
         data: {
           word: dto.word,
           translation: dto.translation,
-          customerId: dto.customerId
+          customerId: dto.customerId,
+          videoExample: dto.videoExample,
+          needToLearn: dto.needToLearn
         }
       });
       return word;
@@ -47,5 +91,59 @@ export class WordService {
       }
       throw error;
     }
+  }
+
+  public async updateWord(
+    wordId: number,
+    data: Prisma.WordUpdateInput
+  ) {
+    const word =
+      await this.prisma.word.findUnique({
+        where: {
+          id: wordId
+        }
+      });
+    if (!word) {
+      throw new NotFoundException(
+        'Word not found'
+      );
+    }
+    return await this.prisma.word.update({
+      where: {
+        id: wordId
+      },
+      data
+    });
+  }
+
+  public async getWordsByCustomerId(
+    customerId: number,
+    needToLearn: boolean,
+    pageSize?: number,
+    offset?: number
+  ) {
+    return await this.prisma.word.findMany({
+      where: {
+        customerId,
+        needToLearn
+      }
+      // take: pageSize,
+      // skip: offset,
+      // orderBy: {
+      //   createdAt: 'desc' // або інше поле, за яким ви хочете сортувати
+      // }
+    });
+  }
+
+  public async getWordCount(
+    customerId: number,
+    needToLearn: boolean
+  ) {
+    return await this.prisma.word.count({
+      where: {
+        customerId,
+        needToLearn
+      }
+    });
   }
 }

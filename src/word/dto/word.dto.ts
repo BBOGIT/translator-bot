@@ -1,7 +1,8 @@
 import {
   IsNotEmpty,
   IsString,
-  IsNumber
+  IsNumber,
+  IsBoolean
 } from 'class-validator';
 
 export class CreateWordDto {
@@ -16,10 +17,21 @@ export class CreateWordDto {
   @IsNotEmpty()
   @IsNumber()
   customerId: number;
+
+  @IsString()
+  @IsNotEmpty()
+  videoExample: string;
+
+  @IsBoolean()
+  needToLearn: boolean;
 }
 
 export class GetWordDto {
   @IsNotEmpty()
   @IsString()
   word: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  customerId: number;
 }

@@ -42,6 +42,12 @@
         "body": "{\"text\":\"{{savedWordText}}\",\"chat_id\":\"{{chatId}}\"}"
     },
     {
+        "name": "savedWordError",
+        "description": "savedWord",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{savedWordErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
         "name": "iknowWord",
         "description": "iknowWord",
         "channel": "telegram",
@@ -51,7 +57,25 @@
         "name": "repeatWords",
         "description": "repeatWords",
         "channel": "telegram",
-        "body": "{\"text\":\"{{repeatWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"callback_data\":\"/repeatWordsNow\"}, {\"text\":\"{{repeatWordsScheduleButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+        "body": "{\"text\":\"{{repeatWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"callback_data\":\"/repeatWordsNow\"}, {\"text\":\"{{repeatWordsScheduleButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"MarkdownV2\"}"
+    },
+    {
+        "name": "repeatWordsNow",
+        "description": "repeatWords",
+        "channel": "telegram",
+        "body": "{\"caption\":\"{{repeatWordsTextNow}}\",\"video\":\"{{videoUrl}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"MarkdownV2\"}"
+    },
+    {
+        "name": "repeatWordsNowEditMedia",
+        "description": "repeatWords",
+        "channel": "telegram",
+        "body": "{\"media\":{\"caption\":\"{{repeatWordsNowEditMediaText}}\",\"media\":\"{{videoUrl}}\",\"type\":\"video\",\"parse_mode\":\"MarkdownV2\"},\"message_id\":\"{{messageId}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
+    },
+    {
+        "name": "repeatWordsNowText",
+        "description": "repeatWords",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{repeatWordsTextNow}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"markdown\"}"
     },
     {
         "name": "checkTranslation",
@@ -82,5 +106,35 @@
         "description": "repeatWordsSchedule",
         "channel": "telegram",
         "body": "{\"text\":\"{{repeatWordsScheduleText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsScheduleWeekButton}}\",\"callback_data\":\"/repeatWordsScheduleWeek\"}, {\"text\":\"{{repeatWordsScheduleMonthButton}}\",\"callback_data\":\"/repeatWordsScheduleMonth\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "notFoundCommand",
+        "description": "notFoundCommand",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{notFoundCommandText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "okay",
+        "description": "okay",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{okayText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "learnedWords",
+        "description": "learnedWords",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{learnedWordsText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "deleteMessage",
+        "description": "okay",
+        "channel": "telegram",
+        "body": "{\"message_id\":\"{{messageId}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "learnedWordsList",
+        "description": "learnedWordsList",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{learnedWordsText}}\n\n{{wordsList}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{previousPageButton}}\",\"callback_data\":\"/previousPage_{{page}}\"},{\"text\":\"{{nextPageButton}}\",\"callback_data\":\"/nextPage_{{page}}\"}],[{\"text\":\"{{returnToLearnButton}}\",\"callback_data\":\"/returnToLearn_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true},\"parse_mode\":\"MarkdownV2\"}"
     }
 ]

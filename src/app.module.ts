@@ -8,6 +8,7 @@ import { WebhookModule } from './webhook/webhook.module';
 import { BotModule } from './bot/bot.module';
 import { CustomerModule } from './customer/customer.module';
 import { MessageModule } from './message/message.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { MessageModule } from './message/message.module';
     BotModule,
     WebhookModule,
     CustomerModule,
-    MessageModule
+    MessageModule,
+    RedisModule
   ]
 })
 export class AppModule {}

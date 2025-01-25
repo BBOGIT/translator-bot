@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsEnum
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import {
   ChannelEnum,
   WebhookTypeEnum
@@ -65,6 +66,9 @@ class AnimationDto {
 }
 
 class MessageDto {
+  @IsNumber()
+  message_id;
+
   @IsObject()
   from: FromDto;
 
@@ -117,6 +121,9 @@ class CallbackQueryDto {
 
   @IsString()
   data: string;
+
+  @IsObject()
+  message: MessageDto;
 }
 
 class EditedMessageDto {
@@ -177,6 +184,10 @@ class WebhookResponseDto {
 
   @IsEnum(ChannelEnum)
   channel: ChannelEnum;
+
+  @IsObject()
+  @Type(() => TelegramWebhookBodyDto)
+  originalWebhook: TelegramWebhookBodyDto;
 }
 
 export {

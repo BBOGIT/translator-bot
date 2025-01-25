@@ -15,111 +15,132 @@ export class WebhookService {
 
   async getTelegramWebhook(
     dto: TelegramWebhookBodyDto
-  ) {
-    let chatId: string,
-      lang: string,
-      text: string | null,
-      webhookType: WebhookTypeEnum,
-      firstName: string | null,
-      lastName: string | null;
-    const channel: ChannelEnum =
-      ChannelEnum.telegram;
+  ): Promise<string> {
+    const responseDto = this.parseWebhook(dto);
+    await this.botService.checkState(responseDto);
+    return 'ok';
+  }
 
-    if (dto.message) {
-      const {
-        from,
-        location,
-        document,
-        sticker,
-        photo,
-        audio,
-        voice,
-        animation,
-        video,
-        contact
-      } = dto.message;
-      chatId = String(from.id);
-      firstName = from.first_name || null;
-      lastName = from.last_name || null;
-      lang = from.language_code;
+  private parseWebhook(
+    dto: TelegramWebhookBodyDto
+  ): WebhookResponseDto & {
+    originalWebhook: TelegramWebhookBodyDto;
+  } {
+    const { source, webhookType } =
+      this.getSourceAndType(dto);
+    const { from } = source;
 
-      if (location) {
-        text = `${location.latitude},${location.longitude}`;
-        webhookType = WebhookTypeEnum.location;
-      } else if (document) {
-        text = document.file_name;
-        if (dto.message.caption) {
-          text += ` ${dto.message.caption}`;
-        }
-        webhookType = WebhookTypeEnum.document;
-      } else if (sticker) {
-        text = sticker.emoji;
-        webhookType = WebhookTypeEnum.sticker;
-      } else if (photo) {
-        text = dto.message.caption || null;
-        webhookType = WebhookTypeEnum.photo;
-      } else if (audio) {
-        text = audio.title;
-        if (audio.performer) {
-          text += ` ${audio.performer}`;
-        }
-        if (dto.message.caption) {
-          text += ` ${dto.message.caption}`;
-        }
-        webhookType = WebhookTypeEnum.audio;
-      } else if (voice) {
-        text = null;
-        webhookType = WebhookTypeEnum.voice;
-      } else if (animation) {
-        text = animation.file_name;
-        webhookType = WebhookTypeEnum.animation;
-      } else if (video) {
-        text = dto.message.caption || null;
-        webhookType = WebhookTypeEnum.video;
-      } else if (contact) {
-        text = contact.phone_number;
-        webhookType = WebhookTypeEnum.contact;
-      } else {
-        text = dto.message.text;
-        webhookType = WebhookTypeEnum.text;
-      }
-    } else if (dto.callback_query) {
-      const { from } = dto.callback_query;
-      chatId = String(from.id);
-      firstName = from.first_name || null;
-      lastName = from.last_name || null;
-      lang = from.language_code;
-      text = dto.callback_query.data;
-      webhookType = WebhookTypeEnum.callbackQuery;
-    } else if (dto.edited_message) {
-      const { from, animation } =
-        dto.edited_message;
-      chatId = String(from.id);
-      firstName = from.first_name || null;
-      lastName = from.last_name || null;
-      lang = from.language_code;
-
-      if (animation) {
-        text = dto.edited_message.caption;
-        webhookType = WebhookTypeEnum.animation;
-      } else {
-        text = dto.edited_message.text;
-        webhookType = WebhookTypeEnum.text;
-      }
-    }
-
-    const responseDto: WebhookResponseDto = {
-      chatId,
-      lang,
+    return {
+      chatId: String(from.id),
+      lang: from.language_code,
       webhookType,
-      text,
-      firstName,
-      lastName,
-      channel
+      text: this.extractText(source, webhookType),
+      firstName: from.first_name ?? null,
+      lastName: from.last_name ?? null,
+      channel: ChannelEnum.telegram,
+      originalWebhook: dto
+    };
+  }
+
+  private getSourceAndType(
+    dto: TelegramWebhookBodyDto
+  ): {
+    source: any;
+    webhookType: WebhookTypeEnum;
+  } {
+    if (dto.message) {
+      return {
+        source: dto.message,
+        webhookType: this.getMessageType(
+          dto.message
+        )
+      };
+    }
+    if (dto.callback_query) {
+      return {
+        source: dto.callback_query,
+        webhookType: WebhookTypeEnum.callbackQuery
+      };
+    }
+    if (dto.edited_message) {
+      const source = dto.edited_message;
+      return {
+        source,
+        webhookType: WebhookTypeEnum.editedMessage
+      };
+    }
+    throw new Error('Unsupported webhook type');
+  }
+
+  private getMessageType(
+    message: any
+  ): WebhookTypeEnum {
+    const typeMap: Record<
+      string,
+      WebhookTypeEnum
+    > = {
+      location: WebhookTypeEnum.location,
+      document: WebhookTypeEnum.document,
+      sticker: WebhookTypeEnum.sticker,
+      photo: WebhookTypeEnum.photo,
+      audio: WebhookTypeEnum.audio,
+      voice: WebhookTypeEnum.voice,
+      animation: WebhookTypeEnum.animation,
+      video: WebhookTypeEnum.video,
+      contact: WebhookTypeEnum.contact
     };
 
-    await this.botService.checkState(responseDto);
+    return (
+      Object.entries(typeMap).find(
+        ([key]) => message[key]
+      )?.[1] ?? WebhookTypeEnum.text
+    );
+  }
 
-    return 'ok';
+  private extractText(
+    source: any,
+    type: WebhookTypeEnum
+  ): string | null {
+    const extractors: Record<
+      WebhookTypeEnum,
+      () => string | null
+    > = {
+      [WebhookTypeEnum.location]: () =>
+        `${source.location.latitude},${source.location.longitude}`,
+      [WebhookTypeEnum.document]: () =>
+        `${source.document.file_name}${
+          source.caption
+            ? ` ${source.caption}`
+            : ''
+        }`,
+      [WebhookTypeEnum.sticker]: () =>
+        source.sticker.emoji,
+      [WebhookTypeEnum.photo]: () =>
+        source.caption ?? null,
+      [WebhookTypeEnum.video]: () =>
+        source.caption ?? null,
+      [WebhookTypeEnum.audio]: () =>
+        `${source.audio.title}${
+          source.audio.performer
+            ? ` ${source.audio.performer}`
+            : ''
+        }${
+          source.caption
+            ? ` ${source.caption}`
+            : ''
+        }`,
+      [WebhookTypeEnum.voice]: () => null,
+      [WebhookTypeEnum.animation]: () =>
+        source.animation.file_name,
+      [WebhookTypeEnum.contact]: () =>
+        source.contact.phone_number,
+      [WebhookTypeEnum.callbackQuery]: () =>
+        source.data,
+      [WebhookTypeEnum.text]: () => source.text,
+      [WebhookTypeEnum.editedMessage]: () =>
+        source.text ?? source.caption ?? null
+    };
+
+    return extractors[type]?.() ?? null;
   }
 }

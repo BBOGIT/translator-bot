@@ -38,11 +38,32 @@
     "savedWordText": {
         "uk": "Зберіг слово для вивчення"
     },
+    "savedWordErrorText": {
+        "uk": "Помилка зі збереженням. Таке слово вже було збережено"
+    },
     "iknowWordText": {
         "uk": "Окей, це круто :)"
     },
     "repeatWordsText": {
         "uk": "Можемо почати повторення слів прямо зараз, або обери коли тобі буде зручно"
+    },
+    "repeatWordsTextNow": {
+        "uk": "Слово: {{word}}\nПереклад: ||{{translation}}||"
+    },
+    "repeatWordsNowEditMediaText": {
+        "uk": "Слово: {{word}}\nПереклад: ||{{translation}}||"
+    },
+    "iHaveLearnedButton": {
+        "uk": "Я вивчив слово"
+    },
+    "iNeedToLearnButton": {
+        "uk": "Ще треба вчити"
+    },
+    "nextWordButton": {
+        "uk": "Наступне слово"
+    },
+    "previousWordButton": {
+        "uk": "Попереднє слово"
     },
     "repeatWordsNowButton": {
         "uk": "Повторити слова прямо зараз"
@@ -76,6 +97,15 @@
     },
     "repeatWordsScheduleMonthButton": {
         "uk": "{{remindInMonthParam}} Нагадувати раз на місяць"
+    },
+    "learnedWordsText": {
+        "uk": "Вивчено слів: {{learnedWordsCount}}"
+    },
+    "notFoundCommandText": {
+        "uk": "Цей функціонал ще в роботі"
+    },
+    "okayText": {
+        "uk": "Добре, запам'ятав"
     },
     "chatId": {
         "uk": ""

@@ -45,7 +45,7 @@ model Word {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  word         String   @unique
+  word         String
   translation  String
   needToLearn  Boolean?
   videoExample String?
@@ -54,5 +54,6 @@ model Word {
   customerId Int
   customer   Customer @relation(fields: [customerId], references: [id])
 
+  @@unique([customerId, word])
   @@map("words")
 }
