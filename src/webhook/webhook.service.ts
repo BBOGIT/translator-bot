@@ -1,4 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger
+} from '@nestjs/common';
 import {
   TelegramWebhookBodyDto,
   WebhookResponseDto
@@ -11,13 +14,23 @@ import { BotService } from 'src/bot/bot.service';
 
 @Injectable()
 export class WebhookService {
+  private readonly logger = new Logger(
+    WebhookService.name
+  );
+
   constructor(private botService: BotService) {}
 
   async getTelegramWebhook(
     dto: TelegramWebhookBodyDto
   ): Promise<string> {
     const responseDto = this.parseWebhook(dto);
-    await this.botService.checkState(responseDto);
+    this.logger.log(
+      `Received Telegram webhook: ${JSON.stringify(
+        responseDto
+      )}`
+    );
+    this.botService.checkState(responseDto);
+
     return 'ok';
   }
 

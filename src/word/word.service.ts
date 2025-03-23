@@ -74,8 +74,10 @@ export class WordService {
           word: dto.word,
           translation: dto.translation,
           customerId: dto.customerId,
+          needToLearn: dto.needToLearn,
           videoExample: dto.videoExample,
-          needToLearn: dto.needToLearn
+          imageExample: dto.imageExample,
+          examples: dto.examples
         }
       });
       return word;

@@ -4,7 +4,8 @@ export enum CustomerState {
   WaitingForWord = 'waitingForWord',
   WaitingForTranslation = 'waitingForTranslation',
   RepeatWordsMain = 'repeatWordsMain',
-  RepeatWordsNow = 'repeatWordsNow'
+  RepeatWordsNow = 'repeatWordsNow',
+  WaitingForWordInput = 'waitingForWordInput'
 }
 
 export interface Customer {
@@ -12,7 +13,7 @@ export interface Customer {
   createdAt: Date;
   updatedAt: Date;
   chatId: string;
-  state: string;
+  state: CustomerState;
   firstName: string;
   lastName: string;
   channel: string;

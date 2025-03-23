@@ -35,8 +35,11 @@
     "unknownLanguageText": {
         "uk": "Невідома мова"
     },
+    "dataForSavingText": {
+        "uk": "Слово або речення: {{word}}\n{{word}} - {{translation}}"
+    },
     "savedWordText": {
-        "uk": "Зберіг слово для вивчення"
+        "uk": "Зберіг слово для вивчення.\n\nСлово: {{word}}\nПереклад: {{translation}}\nПриклади: {{examples}}"
     },
     "savedWordErrorText": {
         "uk": "Помилка зі збереженням. Таке слово вже було збережено"
@@ -99,13 +102,37 @@
         "uk": "{{remindInMonthParam}} Нагадувати раз на місяць"
     },
     "learnedWordsText": {
-        "uk": "Вивчено слів: {{learnedWordsCount}}"
+        "uk": "Кількість вивчених слів: {{learnedWordsCount}}"
     },
     "notFoundCommandText": {
         "uk": "Цей функціонал ще в роботі"
     },
     "okayText": {
         "uk": "Добре, запам'ятав"
+    },
+    "returnToLearnButton": {
+        "uk": "🔄 Повернути до вивчення"
+    },
+    "previousPageButton": {
+        "uk": "⬅️ Попередня сторінка"
+    },
+    "nextPageButton": {
+        "uk": "Наступна сторінка ➡️"
+    },
+    "currentPageText": {
+        "uk": "Сторінка {{currentPage}} з {{totalPages}}"
+    },
+    "learnedWordsListText": {
+        "uk": "Кількість вивчених слів: {{learnedWordsCount}}\n\nСписок слів:\n\n{{wordsList}}\n\nСторінка {{page}} з {{totalPages}}"
+    },
+    "learnedAt": {
+        "uk": "Вивчено: "
+    },
+    "waitingForWordInputText": {
+        "uk": "Будь ласка, надішліть англійське слово або речення, яке ви хочете вивчити. Ви можете:\n\n1️⃣ Написати текст\n2️⃣ Надіслати фото з текстом\n\nЯ автоматично перекладу текст та збережу його для вивчення. 📚✨"
+    },
+    "textProcessingErrorText": {
+        "uk": "Помилка отримання перекладу"
     },
     "chatId": {
         "uk": ""

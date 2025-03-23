@@ -86,7 +86,8 @@ class MessageDto {
 
   @IsOptional()
   @IsArray()
-  photo?: Array<any>;
+  @Type(() => PhotoSizeDto)
+  photo?: PhotoSizeDto[];
 
   @IsOptional()
   @IsObject()
@@ -158,6 +159,23 @@ class TelegramWebhookBodyDto {
   @IsOptional()
   @IsObject()
   edited_message?: EditedMessageDto;
+}
+
+class PhotoSizeDto {
+  @IsString()
+  file_id: string;
+
+  @IsString()
+  file_unique_id: string;
+
+  @IsNumber()
+  width: number;
+
+  @IsNumber()
+  height: number;
+
+  @IsNumber()
+  file_size: number;
 }
 
 class WebhookResponseDto {

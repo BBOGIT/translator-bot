@@ -47,13 +47,35 @@ model Word {
 
   word         String
   translation  String
-  needToLearn  Boolean?
+  needToLearn  Boolean    @default(true)
   videoExample String?
   imageExample String?
+  examples     String?
+  
+  repeatCount       Int       @default(0)
+  lastRepeatAt     DateTime?
+  lastNotificationAt DateTime?
+  nextRepeatDate    DateTime?
+  
+  repetitions      WordRepetition[]
 
   customerId Int
   customer   Customer @relation(fields: [customerId], references: [id])
 
   @@unique([customerId, word])
   @@map("words")
+}
+
+model WordRepetition {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  wordId    Int
+  word      Word     @relation(fields: [wordId], references: [id])
+
+  success   Boolean  @default(false)
+  
+  intervalNumber Int  @default(1)
+
+  @@map("word_repetitions")
 }

@@ -42,8 +42,13 @@ export class MessageService {
   ): Promise<any> {
     try {
       this.logger.log(
-        `Підготовка до відправлення повідомлення Telegram. chatId: ${dto.chatId}, templateName: ${dto.templateName}, lang: ${dto.lang}, dynamicVariables:`,
-        dto.dynamicVariables
+        `Підготовка до відправлення повідомлення Telegram. chatId: ${
+          dto.chatId
+        }, templateName: ${
+          dto.templateName
+        }, lang: ${dto.lang}, dynamicVariables: ${
+          JSON.stringify(dto.dynamicVariables) || {}
+        }`
       );
 
       const {
@@ -101,7 +106,7 @@ export class MessageService {
       }/${messageType || 'sendMessage'}`;
 
       this.logger.debug(
-        `Запит: ${filledTemplate}`
+        `Запит Telegram API: ${filledTemplate}`
       );
 
       const res = await fetch(url, {
@@ -114,7 +119,7 @@ export class MessageService {
 
       const json = await res.json();
       this.logger.log(
-        `Відповідь від Telegram API: ${JSON.stringify(
+        `Відповідь Telegram API: ${JSON.stringify(
           json
         )}`
       );
@@ -208,6 +213,24 @@ export class MessageService {
     lang: string
   ): string {
     try {
+      //перевірка для коректного форматування клавіатури
+      if (attributesData.buttonsArray) {
+        const formattedButtons = Array.isArray(
+          attributesData.buttonsArray
+        )
+          ? attributesData.buttonsArray
+          : Object.values(
+              attributesData.buttonsArray
+            );
+
+        templateBody = templateBody.replace(
+          '"inline_keyboard":{{buttonsArray}}',
+          `"inline_keyboard":${JSON.stringify(
+            formattedButtons
+          )}`
+        );
+      }
+
       const jsonTemplate =
         JSON.parse(templateBody);
       const replaceAttributes = (

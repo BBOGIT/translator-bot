@@ -1,58 +1,50 @@
+// src/customer/customer.service.ts
 import {
   Injectable,
-  NotFoundException
+  Logger
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CustomerDto,
   CustomerUpdateDto,
   CustomerFindDto
 } from './dto';
+import { Customer } from './types/customer.type';
+import { CustomerRepository } from './repositories/customer.repository';
+import { CustomerState } from './enum';
 
 @Injectable()
 export class CustomerService {
-  constructor(private prisma: PrismaService) {}
-  async find(dto: CustomerFindDto) {
-    const customer =
-      await this.prisma.customer.findUnique({
-        where: {
-          chatId: dto.chatId
-        }
-      });
-    // if (!customer) {
-    //   throw new NotFoundException();
-    // }
-    return customer;
+  private readonly logger = new Logger(
+    CustomerService.name
+  );
+
+  constructor(
+    private readonly customerRepository: CustomerRepository
+  ) {}
+
+  async find(
+    dto: CustomerFindDto
+  ): Promise<Customer | null> {
+    return await this.customerRepository.find(
+      dto.chatId
+    );
   }
 
-  async create(dto: CustomerDto) {
-    const customer =
-      await this.prisma.customer.create({
-        data: {
-          ...dto
-        }
-      });
-    return customer;
-  }
-
-  async update(dto: CustomerUpdateDto) {
-    const customer =
-      await this.prisma.customer.findUnique({
-        where: {
-          chatId: dto.chatId
-        }
-      });
-    if (!customer) {
-      throw new NotFoundException();
-    }
-    await this.prisma.customer.update({
-      where: {
-        chatId: dto.chatId
-      },
-      data: {
-        ...dto
-      }
+  async create(
+    dto: CustomerDto
+  ): Promise<Customer> {
+    return await this.customerRepository.create({
+      ...dto,
+      state:
+        dto.state || CustomerState.WelcomeMessage
     });
-    return customer;
+  }
+
+  async update(
+    dto: CustomerUpdateDto
+  ): Promise<Customer> {
+    return await this.customerRepository.update(
+      dto
+    );
   }
 }

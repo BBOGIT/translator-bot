@@ -2,7 +2,10 @@ import {
   IsNotEmpty,
   IsString,
   IsNumber,
-  IsBoolean
+  IsBoolean,
+  IsOptional,
+  IsDate,
+  IsUrl
 } from 'class-validator';
 
 export class CreateWordDto {
@@ -19,11 +22,36 @@ export class CreateWordDto {
   customerId: number;
 
   @IsString()
-  @IsNotEmpty()
-  videoExample: string;
+  @IsOptional() // Робимо необов'язковим, оскільки не всі слова матимуть відео
+  @IsUrl() // Додаємо валідацію URL
+  videoExample?: string;
+
+  @IsString()
+  @IsOptional() // Робимо необов'язковим, оскільки не всі слова матимуть відео
+  @IsUrl() // Додаємо валідацію URL
+  imageExample?: string;
 
   @IsBoolean()
-  needToLearn: boolean;
+  @IsOptional() // За замовчуванням буде true
+  needToLearn?: boolean;
+
+  @IsString()
+  @IsOptional()
+  @IsNotEmpty()
+  examples?: string;
+
+  // Додаємо нові поля для системи повторень
+  @IsNumber()
+  @IsOptional()
+  repeatCount?: number;
+
+  @IsDate()
+  @IsOptional()
+  lastRepeatAt?: Date;
+
+  @IsDate()
+  @IsOptional()
+  lastNotificationAt?: Date;
 }
 
 export class GetWordDto {
@@ -34,4 +62,15 @@ export class GetWordDto {
   @IsNotEmpty()
   @IsNumber()
   customerId: number;
+}
+
+// Додаємо новий DTO для оновлення статусу повторення
+export class UpdateWordRepetitionDto {
+  @IsNotEmpty()
+  @IsNumber()
+  wordId: number;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  success: boolean;
 }

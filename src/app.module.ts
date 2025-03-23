@@ -9,12 +9,15 @@ import { BotModule } from './bot/bot.module';
 import { CustomerModule } from './customer/customer.module';
 import { MessageModule } from './message/message.module';
 import { RedisModule } from './redis/redis.module';
+import { JobsModule } from './jobs/jobs.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     WordModule,
@@ -23,7 +26,8 @@ import { RedisModule } from './redis/redis.module';
     WebhookModule,
     CustomerModule,
     MessageModule,
-    RedisModule
+    RedisModule,
+    JobsModule
   ]
 })
 export class AppModule {}

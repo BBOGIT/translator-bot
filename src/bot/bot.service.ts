@@ -8,12 +8,15 @@ import { WebhookResponseDto } from '../webhook/dto';
 import { RedisService } from '../redis/redis.service';
 import { WordService } from '../word/word.service';
 import { BotConfig } from './bot.config';
-import { Customer } from './bot.types';
+import { Customer } from '../customer/types';
 import {
   handleLearnWordsCommand,
   handleExistingCustomer,
   handleNewCustomer
 } from './bot.handlers';
+import { WordRepetitionJob } from 'src/jobs/word-repetition.job';
+import { TelegramService } from '../telegram/telegram.service';
+import { AiService } from '../ai/ai.service';
 
 @Injectable()
 export class BotService {
@@ -26,20 +29,23 @@ export class BotService {
     private messageService: MessageService,
     private readonly redisService: RedisService,
     private readonly wordService: WordService,
-    private readonly config: BotConfig
+    private readonly config: BotConfig,
+    private wordRepetitionJob: WordRepetitionJob,
+    private readonly telegramService: TelegramService,
+    private readonly aiService: AiService
   ) {}
 
   async checkState(
     dto: WebhookResponseDto
   ): Promise<Customer | null> {
     try {
-      this.logger.log(
-        `Отримано вебхук від Telegram: ${JSON.stringify(
-          dto,
-          null,
-          2
-        )}`
-      );
+      // this.logger.log(
+      //   `Отримано вебхук від Telegram: ${JSON.stringify(
+      //     dto,
+      //     null,
+      //     2
+      //   )}`
+      // );
 
       const validatedLang = this.validateLanguage(
         dto.lang
@@ -73,7 +79,10 @@ export class BotService {
               validatedLang,
               this.customerService,
               this.messageService,
+              this.wordRepetitionJob,
               this.wordService,
+              this.telegramService,
+              this.aiService,
               customer
             );
           }
@@ -85,7 +94,10 @@ export class BotService {
               validatedLang,
               this.customerService,
               this.messageService,
+              this.wordRepetitionJob,
               this.wordService,
+              this.telegramService,
+              this.aiService,
               customer
             );
             break;
@@ -98,7 +110,9 @@ export class BotService {
             this.customerService,
             this.messageService,
             this.redisService,
-            this.wordService
+            this.wordService,
+            this.telegramService,
+            this.aiService
           );
       }
       return customer;
@@ -154,6 +168,13 @@ export class BotService {
       this.logger.log(
         `Збережено нове слово: ${word}`
       );
+      // await this.messageService.TelegramSendMessage(
+      //   {
+      //     chatId,
+      //     lang: lang,
+      //     templateName: 'dataForSaving'
+      //   }
+      // );
       await this.messageService.TelegramSendMessage(
         {
           chatId,
