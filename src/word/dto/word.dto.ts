@@ -35,10 +35,9 @@ export class CreateWordDto {
   @IsOptional() // За замовчуванням буде true
   needToLearn?: boolean;
 
-  @IsString()
   @IsOptional()
   @IsNotEmpty()
-  examples?: string;
+  examples?: string | string[];
 
   // Додаємо нові поля для системи повторень
   @IsNumber()

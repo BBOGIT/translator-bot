@@ -69,6 +69,34 @@ export class WordService {
 
   public async createWord(dto: CreateWordDto) {
     try {
+      // Make sure examples is a string before saving
+      if (
+        dto.examples &&
+        Array.isArray(dto.examples)
+      ) {
+        dto.examples = JSON.stringify(
+          dto.examples
+        );
+      }
+
+      // Перевірка та логування videoExample
+      console.log(
+        `[WordService] Створення слова "${dto.word}" з videoExample="${dto.videoExample}"`
+      );
+
+      // Перевірка на валідність videoExample
+      if (
+        dto.videoExample === 'null' ||
+        dto.videoExample === '' ||
+        (dto.videoExample &&
+          dto.videoExample.trim() === '')
+      ) {
+        console.log(
+          `[WordService] Виявлено невалідний videoExample. Встановлюємо null.`
+        );
+        dto.videoExample = null;
+      }
+
       const word = await this.prisma.word.create({
         data: {
           word: dto.word,
@@ -77,7 +105,7 @@ export class WordService {
           needToLearn: dto.needToLearn,
           videoExample: dto.videoExample,
           imageExample: dto.imageExample,
-          examples: dto.examples
+          examples: dto.examples as string
         }
       });
       return word;

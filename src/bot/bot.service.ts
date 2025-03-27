@@ -121,7 +121,7 @@ export class BotService {
         `Помилка при обробці стану: ${err.message}`,
         err.stack
       );
-      throw err;
+      return null;
     }
   }
 
@@ -168,38 +168,61 @@ export class BotService {
       this.logger.log(
         `Збережено нове слово: ${word}`
       );
-      // await this.messageService.TelegramSendMessage(
-      //   {
-      //     chatId,
-      //     lang: lang,
-      //     templateName: 'dataForSaving'
-      //   }
-      // );
-      await this.messageService.TelegramSendMessage(
-        {
-          chatId,
-          lang: lang,
-          templateName: 'savedWord'
-        }
-      );
+
+      const result =
+        await this.messageService.TelegramSendMessage(
+          {
+            chatId,
+            lang: lang,
+            templateName: 'savedWord'
+          }
+        );
+
+      if (!result.ok) {
+        this.logger.error(
+          `Помилка при відправленні повідомлення про збереження слова: ${JSON.stringify(
+            result
+          )}`
+        );
+      }
     } catch (error) {
       this.logger.error(
         `Помилка при збереженні слова: ${error.message}`
       );
-      await this.messageService.TelegramSendMessage(
-        {
-          chatId,
-          lang: lang,
-          templateName: 'savedWordError'
-        }
-      );
-      await this.messageService.TelegramSendMessage(
-        {
-          chatId,
-          lang: lang,
-          templateName: 'mainMenu'
-        }
-      );
+
+      const errorResult =
+        await this.messageService.TelegramSendMessage(
+          {
+            chatId,
+            lang: lang,
+            templateName: 'savedWordError'
+          }
+        );
+
+      if (!errorResult.ok) {
+        this.logger.error(
+          `Помилка при відправленні повідомлення про помилку: ${JSON.stringify(
+            errorResult
+          )}`
+        );
+      }
+
+      const menuResult =
+        await this.messageService.TelegramSendMessage(
+          {
+            chatId,
+            lang: lang,
+            templateName: 'mainMenu'
+          }
+        );
+
+      if (!menuResult.ok) {
+        this.logger.error(
+          `Помилка при відправленні головного меню: ${JSON.stringify(
+            menuResult
+          )}`
+        );
+      }
     }
   }
 }

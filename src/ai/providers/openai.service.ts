@@ -40,7 +40,7 @@ export class OpenAIService
             content: `You are a translator assistant. Always respond in the following JSON format: 
               { "extractedText": "The word in English",
                 "translation": "Ukrainian translation of the text",
-                "examples": "example1", "example2", "example3"
+                "examples": "example1 in English", "example2 in English", "example3 in English"
               }`
           },
           {
@@ -75,8 +75,65 @@ export class OpenAIService
       }
 
       try {
+        // Clean up content and fix common format issues before parsing
+        let cleanContent = content
+          .replace(/\t+$/g, '')
+          .replace(/\n\s+\n/g, '');
+
+        // Fix numbered examples format: "examples": "1. First example", "2. Second example"
+        if (
+          cleanContent.includes('"examples":') &&
+          (cleanContent.match(
+            /"examples":\s*"[^"]*?[0-9]+\.\s+[^"]*?"/
+          ) ||
+            cleanContent.match(
+              /"examples":\s*"[^"]*?"[\s,]+"[0-9]+\.\s+/
+            ))
+        ) {
+          // Extract all examples (including those split across multiple properties)
+          const examplesRegex =
+            /"examples":\s*"([^"]*)"|"([0-9]+\.\s+[^"]*)"/g;
+          const examples = [];
+          let match;
+
+          while (
+            (match =
+              examplesRegex.exec(
+                cleanContent
+              )) !== null
+          ) {
+            const example = match[1] || match[2];
+            if (example) examples.push(example);
+          }
+
+          // Join all examples into one string
+          const allExamples = examples.join(' ');
+
+          // Split by numbered pattern and filter out empty strings
+          const splitExamples = allExamples
+            .split(/(?=[0-9]+\.\s+)/)
+            .filter(ex => ex.trim().length > 0)
+            .map(ex => ex.trim());
+
+          // Create proper JSON array of examples
+          const fixedExamplesJson =
+            JSON.stringify(splitExamples);
+
+          // Replace the incorrect examples format with proper JSON array
+          cleanContent = cleanContent.replace(
+            /"examples":\s*"[^"]*?"(?:[\s,]+"[0-9]+\.\s+[^"]*?")*/,
+            `"examples": ${fixedExamplesJson}`
+          );
+        } else {
+          // Apply the original fix for non-numbered examples
+          cleanContent = cleanContent.replace(
+            /(\n|,)\s+"examples":\s+"([^"]+)"/g,
+            '$1"examples": ["$2"]'
+          );
+        }
+
         const parsedResponse = JSON.parse(
-          content
+          cleanContent
         ) as AIResponse;
         this.validateResponse(parsedResponse);
         return this.formatResponse(
@@ -133,7 +190,7 @@ Respond in the following JSON format:
 {
   "extractedText": "The most complex English word or phrase identified in the image",
   "translation": "Ukrainian translation of the extracted text",
-  "examples": ["Example sentence 1 using the word/phrase", "Example sentence 2 using the word/phrase", "Example sentence 3 using the word/phrase"]
+  "examples": ["Example sentence 1 using the word/phrase in English", "Example sentence 2 using the word/phrase in English", "Example sentence 3 using the word/phrase in English"]
 }`
                   },
                   {
@@ -181,9 +238,57 @@ Respond in the following JSON format:
             error: parseError
           }
         );
-        throw new AIValidationError(
-          'Invalid JSON response from OpenAI'
-        );
+
+        try {
+          // Try to clean up the JSON string before re-attempting to parse
+          let cleanContent = content;
+
+          // Remove trailing tabs, spaces, or other control characters
+          cleanContent = cleanContent.replace(
+            /\t+$/g,
+            ''
+          );
+
+          // Fix common issues with examples format
+          if (
+            cleanContent.includes(
+              '"examples":'
+            ) &&
+            !cleanContent.includes(
+              '"examples": ['
+            )
+          ) {
+            const examplesMatches =
+              cleanContent.match(
+                /"examples":\s*"(.+?)"/
+              );
+            if (
+              examplesMatches &&
+              examplesMatches[1]
+            ) {
+              const examplesText =
+                examplesMatches[1];
+              const fixedExamples = `"examples": ["${examplesText}"]`;
+              cleanContent = cleanContent.replace(
+                /"examples":\s*"(.+?)"/,
+                fixedExamples
+              );
+            }
+          }
+
+          const reparsedResponse = JSON.parse(
+            cleanContent
+          ) as AIResponse;
+          this.validateResponse(reparsedResponse);
+          return this.formatResponse(
+            reparsedResponse
+          );
+        } catch (reparseError) {
+          // If all parsing attempts fail, throw the original error
+          throw new AIValidationError(
+            'Invalid JSON response from OpenAI'
+          );
+        }
       }
     } catch (error) {
       if (error instanceof AIValidationError) {

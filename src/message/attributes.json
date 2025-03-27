@@ -51,10 +51,10 @@
         "uk": "Можемо почати повторення слів прямо зараз, або обери коли тобі буде зручно"
     },
     "repeatWordsTextNow": {
-        "uk": "Слово: {{word}}\nПереклад: ||{{translation}}||"
+        "uk": "Слово: {{word}}\nПереклад: ||{{translation}}||\n\nПриклади:\n||{{examples}}||"
     },
     "repeatWordsNowEditMediaText": {
-        "uk": "Слово: {{word}}\nПереклад: ||{{translation}}||"
+        "uk": "Слово: {{word}}\nПереклад: ||{{translation}}||\n\nПриклади:\n||{{examples}}||"
     },
     "iHaveLearnedButton": {
         "uk": "Я вивчив слово"

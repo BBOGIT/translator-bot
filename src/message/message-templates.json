@@ -79,25 +79,25 @@
     },
     {
         "name": "repeatWordsNow",
-        "description": "repeatWords",
+        "description": "repeatWords з відео та прикладами",
         "channel": "telegram",
         "body": "{\"caption\":\"{{repeatWordsTextNow}}\",\"video\":\"{{videoUrl}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"MarkdownV2\"}"
     },
     {
         "name": "repeatWordsNowPhoto",
-        "description": "repeatWords",
+        "description": "repeatWords з зображенням та прикладами",
         "channel": "telegram",
-        "body": "{\"caption\":\"{{repeatWordsTextNow}}\",\"photo\":\"{{videoUrl}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"MarkdownV2\"}"
+        "body": "{\"caption\":\"{{repeatWordsTextNow}}\",\"photo\":\"{{imageUrl}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"MarkdownV2\"}"
     },
     {
         "name": "repeatWordsNowEditMedia",
-        "description": "repeatWords",
+        "description": "repeatWords з відео (для редагування) та прикладами",
         "channel": "telegram",
         "body": "{\"media\":{\"caption\":\"{{repeatWordsNowEditMediaText}}\",\"media\":\"{{videoUrl}}\",\"type\":\"video\",\"parse_mode\":\"MarkdownV2\"},\"message_id\":\"{{messageId}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "repeatWordsNowText",
-        "description": "repeatWords",
+        "description": "repeatWords текстове повідомлення з прикладами",
         "channel": "telegram",
         "body": "{\"text\":\"{{repeatWordsTextNow}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{iHaveLearnedButton}}\",\"callback_data\":\"/iHaveLearnedButton_{{wordId}}\"},{\"text\":\"{{iNeedToLearnButton}}\",\"callback_data\":\"/iNeedToLearn_{{wordId}}\"}],[{\"text\":\"{{previousWordButton}}\",\"callback_data\":\"/previousWord_{{wordId}}\"},{\"text\":\"{{nextWordButton}}\",\"callback_data\":\"/nextWord_{{wordId}}\"}],[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"MarkdownV2\"}"
     },

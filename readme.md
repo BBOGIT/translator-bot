@@ -1,73 +1,245 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Translator Bot - Бот помічник для вивчення слів
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Цей проект - Telegram бот для допомоги у вивченні іноземних слів, який дозволяє користувачам додавати нові слова для вивчення, переглядати їх переклади, бачити приклади використання, та повторювати вивчені слова за методикою інтервального повторення.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Зміст
 
-## Description
+- [Опис проекту](#опис-проекту)
+- [Функціональні можливості](#функціональні-можливості)
+- [Технічний стек](#технічний-стек)
+- [Структура проекту](#структура-проекту)
+- [Налаштування та запуск](#налаштування-та-запуск)
+- [API](#api)
+- [Модулі](#модулі)
+- [База даних](#база-даних)
+- [Робота з повідомленнями](#робота-з-повідомленнями)
+- [Планувальник завдань](#планувальник-завдань)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Опис проекту
 
-## Installation
+Telegram-бот створений для зручного вивчення іноземних слів з використанням методики інтервального повторення. Користувачі можуть додавати слова для вивчення, а бот допомагатиме з перекладом, прикладами використання та регулярним нагадуванням про необхідність повторення слів у оптимальні моменти для закріплення знань.
 
-```bash
-$ yarn install
+## Функціональні можливості
+
+- **Додавання нових слів**: Користувачі можуть додавати нові слова для вивчення текстом або фотографією.
+- **Автоматичний переклад**: Інтеграція з AI-сервісом для автоматичного перекладу та генерації прикладів використання.
+- **Повторення слів**: Система інтервального повторення для ефективного запам'ятовування.
+- **Відстеження прогресу**: Користувачі можуть переглядати свій прогрес вивчення слів.
+- **Медіа-підтримка**: Можливість прикріплювати до слів відео- та фото-приклади для кращого запам'ятовування.
+- **Інтервальні нагадування**: Автоматичні нагадування для повторення слів у оптимальний час.
+
+## Технічний стек
+
+- **Backend Framework**: NestJS (Node.js)
+- **Мова програмування**: TypeScript
+- **База даних**: PostgreSQL з Prisma ORM
+- **Кеш**: Redis
+- **Управління станом**: Telegram Bot API, власна система стану користувача
+- **Планувальник**: NestJS Scheduler
+- **AI Services**: Інтеграція з AI для перекладу та генерації прикладів
+
+## Структура проекту
+
+```
+src/
+├── ai/                  # Сервіс інтеграції з AI для перекладу
+├── auth/                # Модуль авторизації
+├── bot/                 # Основний модуль обробки Telegram-бота
+│   ├── bot.handlers.ts  # Обробники команд бота
+│   ├── bot.service.ts   # Сервіс бота
+│   ├── bot.types.ts     # Типи даних
+│   ├── handlers/        # Додаткові обробники команд
+│   └── ...
+├── customer/            # Модуль для роботи з користувачами
+├── jobs/                # Планувальник завдань
+│   └── word-repetition.job.ts # Завдання для нагадування про повторення слів
+├── message/             # Модуль для роботи з повідомленнями
+│   ├── message.service.ts     # Сервіс повідомлень
+│   ├── message-templates.json # Шаблони повідомлень
+│   └── attributes.json        # Атрибути для повідомлень
+├── prisma/              # Модуль для роботи з базою даних
+├── redis/               # Модуль для роботи з Redis
+├── telegram/            # Сервіс для взаємодії з Telegram API
+├── user/                # Модуль для роботи з користувачами (адмін)
+├── webhook/             # Модуль для обробки webhook-повідомлень
+├── word/                # Модуль для роботи зі словами
+│   ├── word.service.ts  # Сервіс для роботи зі словами
+│   ├── dto/             # Data Transfer Objects
+│   └── ...
+└── app.module.ts        # Головний модуль додатка
 ```
 
-## Running the app
+## Налаштування та запуск
 
-```bash
-# development
-$ yarn run start
+### Вимоги
 
-# watch mode
-$ yarn run start:dev
+- Node.js (v14+)
+- PostgreSQL
+- Redis
+- Telegram Bot Token
 
-# production mode
-$ yarn run start:prod
+### Змінні середовища
+
+Створіть файл `.env` у корені проекту з наступними змінними:
+
+```
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/translator_bot?schema=public"
+
+# Telegram
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# AI Services
+AI_SERVICE_API_KEY=your_ai_service_api_key
 ```
 
-## Test
+### Встановлення
 
 ```bash
-# unit tests
-$ yarn run test
+# Встановлення залежностей
+npm install
 
-# e2e tests
-$ yarn run test:e2e
+# Генерація Prisma клієнта
+npx prisma generate
 
-# test coverage
-$ yarn run test:cov
+# Міграція бази даних
+npx prisma migrate dev
 ```
 
-## Support
+### Запуск
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Розробка
+npm run start:dev
 
-## Stay in touch
+# Продакшн
+npm run build
+npm run start:prod
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## API
 
-## License
+### Webhook
 
-Nest is [MIT licensed](LICENSE).
+Бот використовує webhook для отримання повідомлень від Telegram. Налаштуйте webhook URL в Telegram Bot API:
+
+```
+https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/setWebhook?url={YOUR_WEBHOOK_URL}/api/webhook/telegram
+```
+
+## Модулі
+
+### Bot Module
+
+Основний модуль для обробки команд і повідомлень Telegram-бота:
+
+- `/start` - Привітання та початок роботи
+- `/mainMenu` - Повернення до головного меню
+- `/learnWords` - Додавання нових слів для вивчення
+- `/repeatWords` - Початок повторення слів
+- `/myProgress` - Перегляд прогресу вивчення
+
+### Word Module
+
+Модуль для роботи зі словами:
+
+- `createWord` - Створення нового слова
+- `getWordsByCustomerId` - Отримання слів для конкретного користувача
+- `updateWord` - Оновлення слова (наприклад, позначення як вивчене)
+- `getLearnedWordsWithPagination` - Отримання вивчених слів з пагінацією
+
+### Message Module
+
+Модуль для формування та відправки повідомлень користувачу:
+
+- `TelegramSendMessage` - Відправка повідомлення через Telegram API
+- `fillTemplateAttributes` - Заповнення шаблону повідомлення атрибутами
+
+### Jobs Module
+
+Модуль для планування та виконання завдань:
+
+- `WordRepetitionJob` - Завдання для нагадувань про повторення слів
+- `findWordsForRepetition` - Пошук слів, які необхідно повторити
+- `sendRepetitionNotification` - Відправка нагадувань про повторення слів
+
+## База даних
+
+Проект використовує PostgreSQL з Prisma ORM. Основні моделі:
+
+### User
+
+Модель для адміністраторів системи.
+
+### Customer
+
+Модель для користувачів Telegram-бота:
+- `chatId` - Ідентифікатор чату Telegram
+- `state` - Поточний стан користувача (для управління діалогом)
+- `words` - Зв'язок з моделлю Word (слова користувача)
+
+### Word
+
+Модель для зберігання слів:
+- `word` - Слово для вивчення
+- `translation` - Переклад слова
+- `examples` - Приклади використання
+- `needToLearn` - Чи потрібно ще вчити слово
+- `videoExample` - URL відео-прикладу (опціонально)
+- `imageExample` - Ідентифікатор фото-прикладу (опціонально)
+- `repeatCount` - Кількість повторень
+- `lastRepeatAt` - Час останнього повторення
+- `nextRepeatDate` - Дата наступного повторення
+- `repetitions` - Зв'язок з моделлю WordRepetition
+
+### WordRepetition
+
+Модель для відстеження повторень слів:
+- `wordId` - Зв'язок з моделлю Word
+- `success` - Успішність повторення
+- `intervalNumber` - Номер інтервалу (для розрахунку наступного повторення)
+
+## Робота з повідомленнями
+
+Бот використовує систему шаблонів і атрибутів для гнучкого формування повідомлень:
+
+- `message-templates.json` - Шаблони повідомлень для різних каналів
+- `attributes.json` - Атрибути для заповнення шаблонів (підтримує мультимовність)
+
+## Планувальник завдань
+
+Проект використовує `@nestjs/schedule` для планування завдань:
+
+- `WordRepetitionJob` запускається за розкладом для знаходження слів, які потрібно повторити
+- Система розраховує оптимальний час для повторення на основі методики інтервального повторення
+
+## Особливості реалізації
+
+### Робота з відео та зображеннями
+
+Бот підтримує додавання медіа-контенту до слів для кращого запам'ятовування:
+- Відео-приклади зберігаються як URL
+- Фото-приклади зберігаються як file_id Telegram
+
+### Система форматування прикладів
+
+Приклади використання слів можуть зберігатися у різних форматах:
+- Як рядок
+- Як масив рядків (JSON)
+- Як об'єкт (для складних структур)
+
+Система автоматично обробляє ці формати при відображенні користувачу.
+
+## Внесок до проекту
+
+Для внесення змін:
+1. Створіть fork репозиторію
+2. Створіть нову гілку (`git checkout -b feature/amazing-feature`)
+3. Зробіть зміни та commit (`git commit -m 'Add some amazing feature'`)
+4. Push до гілки (`git push origin feature/amazing-feature`)
+5. Відкрийте Pull Request
+

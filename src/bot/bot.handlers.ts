@@ -209,8 +209,7 @@ export async function handleLearnWordsCommand(
           lang,
           dynamicVariables: {
             learnedWordsText: fullMessageText,
-            buttonsArray:
-              JSON.stringify(buttonsArray)
+            buttonsArray: buttonsArray
           }
         };
 
@@ -229,9 +228,38 @@ export async function handleLearnWordsCommand(
           }
         );
 
-        await messageService.TelegramSendMessage(
-          messageData
-        );
+        const result =
+          await messageService.TelegramSendMessage(
+            messageData
+          );
+
+        if (!result.ok) {
+          console.error(
+            'Помилка при відправці повідомлення /myProgress:',
+            JSON.stringify(result)
+          );
+
+          // Спроба відправити простіше повідомлення про помилку
+          const errorMsgResult =
+            await messageService.TelegramSendMessage(
+              {
+                chatId: dto.chatId,
+                templateName: 'errorMessage',
+                lang,
+                dynamicVariables: {
+                  errorMessage:
+                    'На жаль, сталася помилка при відображенні вашого прогресу. Спробуйте пізніше.'
+                }
+              }
+            );
+
+          if (!errorMsgResult.ok) {
+            console.error(
+              'Помилка при відправці повідомлення про помилку:',
+              JSON.stringify(errorMsgResult)
+            );
+          }
+        }
       } catch (error) {
         console.error(
           'Помилка при обробці команди /myProgress:',
@@ -239,20 +267,28 @@ export async function handleLearnWordsCommand(
         );
 
         try {
-          await messageService.TelegramSendMessage(
-            {
-              chatId: dto.chatId,
-              templateName: 'errorMessage',
-              lang,
-              dynamicVariables: {
-                errorMessage:
-                  'На жаль, сталася помилка при отриманні вашого прогресу. Спробуйте пізніше.'
+          const errorResult =
+            await messageService.TelegramSendMessage(
+              {
+                chatId: dto.chatId,
+                templateName: 'errorMessage',
+                lang,
+                dynamicVariables: {
+                  errorMessage:
+                    'На жаль, сталася помилка при отриманні вашого прогресу. Спробуйте пізніше.'
+                }
               }
-            }
-          );
+            );
+
+          if (!errorResult.ok) {
+            console.error(
+              'Помилка при відправці повідомлення про помилку:',
+              JSON.stringify(errorResult)
+            );
+          }
         } catch (sendError) {
           console.error(
-            'Помилка при відправці повідомлення про помилку:',
+            'Критична помилка при відправці повідомлення про помилку:',
             sendError
           );
         }
@@ -271,7 +307,89 @@ export async function handleLearnWordsCommand(
         );
       if (words.length > 0) {
         const firstWord = words[0];
-        if (firstWord.videoExample) {
+
+        // Обробка examples для відображення
+        let formattedExamples = '';
+        if (firstWord.examples) {
+          try {
+            // Якщо приклади в рядку
+            if (
+              typeof firstWord.examples ===
+              'string'
+            ) {
+              // Якщо це JSON-рядок, спробуємо розпарсити
+              if (
+                firstWord.examples.startsWith(
+                  '['
+                ) &&
+                firstWord.examples.endsWith(']')
+              ) {
+                try {
+                  const parsedExamples =
+                    JSON.parse(
+                      firstWord.examples
+                    );
+                  if (
+                    Array.isArray(parsedExamples)
+                  ) {
+                    formattedExamples =
+                      parsedExamples.join('\n');
+                  }
+                } catch (parseError) {
+                  // Якщо розпарсити не вдалося, просто видаляємо дужки та лапки
+                  formattedExamples =
+                    firstWord.examples
+                      .replace(/[\[\]"]/g, '')
+                      .replace(/,/g, '\n');
+                }
+              } else {
+                // Якщо не JSON, використовуємо як є
+                formattedExamples =
+                  firstWord.examples;
+              }
+            } else if (
+              Array.isArray(firstWord.examples)
+            ) {
+              // Якщо приклади вже у масиві
+              formattedExamples = (
+                firstWord.examples as string[]
+              ).join('\n');
+            } else {
+              // Для інших типів
+              formattedExamples = String(
+                firstWord.examples
+              );
+            }
+          } catch (error) {
+            console.error(
+              'Помилка при форматуванні прикладів:',
+              error
+            );
+            formattedExamples = String(
+              firstWord.examples
+            )
+              .replace(/[\[\]"]/g, '')
+              .replace(/,/g, '\n');
+          }
+        }
+
+        // Додаткове логування даних про відео
+        console.log(
+          `Перевірка video для слова "${firstWord.word}": videoExample = "${firstWord.videoExample}"`
+        );
+        console.log(
+          `Тип videoExample: ${typeof firstWord.videoExample}, довжина: ${
+            firstWord.videoExample
+              ? firstWord.videoExample.length
+              : 0
+          }`
+        );
+
+        if (
+          firstWord.videoExample &&
+          firstWord.videoExample !== 'null' &&
+          firstWord.videoExample.trim() !== ''
+        ) {
           await messageService.TelegramSendMessage(
             {
               messageType: 'sendVideo',
@@ -280,7 +398,9 @@ export async function handleLearnWordsCommand(
               lang,
               dynamicVariables: {
                 word: firstWord.word,
-                translation: firstWord.translation
+                translation:
+                  firstWord.translation,
+                examples: formattedExamples
               },
               wordId: firstWord.id + '',
               videoUrl: firstWord.videoExample
@@ -295,10 +415,12 @@ export async function handleLearnWordsCommand(
               lang,
               dynamicVariables: {
                 word: firstWord.word,
-                translation: firstWord.translation
+                translation:
+                  firstWord.translation,
+                examples: formattedExamples
               },
               wordId: firstWord.id + '',
-              videoUrl: firstWord.videoExample
+              imageUrl: firstWord.imageExample
             }
           );
         } else {
@@ -309,7 +431,9 @@ export async function handleLearnWordsCommand(
               lang,
               dynamicVariables: {
                 word: firstWord.word,
-                translation: firstWord.translation
+                translation:
+                  firstWord.translation,
+                examples: formattedExamples
               },
               wordId: firstWord.id + ''
             }
@@ -329,19 +453,59 @@ export async function handleLearnWordsCommand(
       const isNext =
         dto.text.startsWith('/nextWord_');
       const needToLearn = true;
+
+      console.log(
+        `Обробка команди ${dto.text}, wordId: ${wordId}, isNext: ${isNext}`
+      );
+
       const allWords =
         await wordService.getWordsByCustomerId(
           customer.id,
           needToLearn
         );
 
+      console.log(
+        `Знайдено слів для користувача: ${allWords.length}`
+      );
+
       const currentIndex = allWords.findIndex(
         word => word.id == Number(wordId)
       );
+
+      console.log(
+        `currentIndex: ${currentIndex}`
+      );
+
+      if (currentIndex === -1) {
+        console.error(
+          `Слово з ID ${wordId} не знайдено у списку слів користувача`
+        );
+        await messageService.TelegramSendMessage({
+          chatId: dto.chatId,
+          templateName: 'errorMessage',
+          lang,
+          dynamicVariables: {
+            errorMessage:
+              'На жаль, сталася помилка при пошуку наступного слова. Спробуйте пізніше.'
+          }
+        });
+        break;
+      }
+
       const currentWord = allWords[currentIndex];
+
+      console.log(
+        `Поточне слово: ${JSON.stringify(
+          currentWord
+        )}`
+      );
 
       const wordsToRepeat = allWords.filter(
         word => word.needToLearn
+      );
+
+      console.log(
+        `Слів для повторення: ${wordsToRepeat.length}`
       );
 
       if (wordsToRepeat.length > 0) {
@@ -368,33 +532,320 @@ export async function handleLearnWordsCommand(
           newWord = wordsToRepeat[newIndex];
         }
 
-        await messageService.TelegramSendMessage({
-          messageType: 'deleteMessage',
-          chatId: dto.chatId,
-          templateName: 'deleteMessage',
-          lang,
-          messageId:
-            dto.originalWebhook.callback_query
-              .message.message_id + ''
-        });
+        console.log(
+          `Нове слово для показу: ${JSON.stringify(
+            newWord
+          )}`
+        );
 
-        await messageService.TelegramSendMessage({
-          //messageType: 'editMessageMedia',
-          chatId: dto.chatId,
-          //templateName: 'repeatWordsNowEditMedia',
+        console.log(
+          `Дані message_id для видалення: ${dto.originalWebhook.callback_query?.message?.message_id}`
+        );
+
+        // Перевіряємо чи існує callback_query та message_id
+        if (
+          !dto.originalWebhook.callback_query
+            ?.message?.message_id
+        ) {
+          console.error(
+            'Відсутній message_id для видалення повідомлення'
+          );
+          // Пропускаємо видалення, якщо немає message_id
+        } else {
+          try {
+            const deleteResult =
+              await messageService.TelegramSendMessage(
+                {
+                  messageType: 'deleteMessage',
+                  chatId: dto.chatId,
+                  templateName: 'deleteMessage',
+                  lang,
+                  messageId:
+                    dto.originalWebhook
+                      .callback_query.message
+                      .message_id + ''
+                }
+              );
+
+            if (!deleteResult.ok) {
+              console.error(
+                `Помилка при видаленні повідомлення: ${JSON.stringify(
+                  deleteResult
+                )}`
+              );
+            }
+          } catch (deleteError) {
+            console.error(
+              'Помилка при спробі видалення повідомлення:',
+              deleteError
+            );
+          }
+        }
+
+        // Функція для форматування examples
+        const formatExamples = examples => {
+          if (!examples) return '';
+
+          try {
+            // Якщо приклади вже є рядком
+            if (typeof examples === 'string') {
+              // Якщо це JSON-рядок, спробуємо розпарсити
+              if (
+                examples.startsWith('[') &&
+                examples.endsWith(']')
+              ) {
+                try {
+                  const parsedExamples =
+                    JSON.parse(examples);
+                  if (
+                    Array.isArray(parsedExamples)
+                  ) {
+                    return parsedExamples.join(
+                      '\n'
+                    );
+                  }
+                } catch (parseError) {
+                  // Якщо розпарсити не вдалося, просто видаляємо дужки та лапки
+                  return examples
+                    .replace(/[\[\]"]/g, '')
+                    .replace(/,/g, '\n');
+                }
+              }
+              // Якщо не JSON і вже рядок, повертаємо як є
+              return examples;
+            }
+
+            // Якщо приклади є масивом
+            if (Array.isArray(examples)) {
+              return (examples as string[]).join(
+                '\n'
+              );
+            }
+
+            // Для інших типів конвертуємо в рядок
+            return String(examples);
+          } catch (error) {
+            console.error(
+              'Помилка при форматуванні прикладів:',
+              error
+            );
+            // Намагаємося повернути хоч якийсь результат
+            if (examples) {
+              return String(examples)
+                .replace(/[\[\]"]/g, '')
+                .replace(/,/g, '\n');
+            }
+            return '';
+          }
+        };
+
+        console.log(
+          `Підготовка запиту на відправку відео з новим словом`
+        );
+        console.log(
+          `Відео URL: ${
+            newWord.videoExample ?? 'відсутній'
+          }`
+        );
+
+        // Детальна діагностика videoExample
+        console.log(
+          `Детальна перевірка videoExample для слова "${newWord.word}":`
+        );
+        console.log(
+          `- Тип: ${typeof newWord.videoExample}`
+        );
+        console.log(
+          `- Довжина: ${
+            newWord.videoExample
+              ? newWord.videoExample.length
+              : 0
+          }`
+        );
+        console.log(
+          `- Значення: "${newWord.videoExample}"`
+        );
+        console.log(
+          `- videoExample === null: ${
+            newWord.videoExample === null
+          }`
+        );
+        console.log(
+          `- videoExample === "null": ${
+            newWord.videoExample === 'null'
+          }`
+        );
+        console.log(
+          `- videoExample.trim() === "": ${
+            newWord.videoExample
+              ? newWord.videoExample.trim() === ''
+              : 'N/A'
+          }`
+        );
+
+        // Форматуємо приклади
+        const formattedExamples = formatExamples(
+          newWord.examples
+        );
+
+        console.log(`Дані для відправки відео:`, {
           messageType: 'sendVideo',
+          chatId: dto.chatId,
           templateName: 'repeatWordsNow',
           lang,
           dynamicVariables: {
             word: newWord.word,
-            translation: newWord.translation
+            translation: newWord.translation,
+            examples: formattedExamples
           },
-          // messageId:
-          //   dto.originalWebhook.callback_query
-          //     .message.message_id + '',
           wordId: newWord.id + '',
           videoUrl: newWord.videoExample
         });
+
+        // Перевіряємо videoExample і вибираємо правильний шаблон для відправки
+        if (
+          newWord.videoExample &&
+          newWord.videoExample !== 'null' &&
+          newWord.videoExample.trim() !== ''
+        ) {
+          console.log(
+            'Відправляємо повідомлення з відео'
+          );
+          try {
+            const sendResult =
+              await messageService.TelegramSendMessage(
+                {
+                  messageType: 'sendVideo',
+                  chatId: dto.chatId,
+                  templateName: 'repeatWordsNow',
+                  lang,
+                  dynamicVariables: {
+                    word: newWord.word,
+                    translation:
+                      newWord.translation,
+                    examples: formattedExamples
+                  },
+                  wordId: newWord.id + '',
+                  videoUrl: newWord.videoExample
+                }
+              );
+
+            if (!sendResult.ok) {
+              console.error(
+                `Помилка при відправці відео: ${JSON.stringify(
+                  sendResult
+                )}`
+              );
+
+              // Якщо не вдалося відправити відео, спробуємо відправити текстове повідомлення
+              await messageService.TelegramSendMessage(
+                {
+                  chatId: dto.chatId,
+                  templateName:
+                    'repeatWordsNowText',
+                  lang,
+                  dynamicVariables: {
+                    word: newWord.word,
+                    translation:
+                      newWord.translation,
+                    examples: formattedExamples
+                  },
+                  wordId: newWord.id + ''
+                }
+              );
+            }
+          } catch (sendError) {
+            console.error(
+              'Критична помилка при відправці відео:',
+              sendError
+            );
+
+            // При критичній помилці відправляємо текстове повідомлення
+            try {
+              await messageService.TelegramSendMessage(
+                {
+                  chatId: dto.chatId,
+                  templateName:
+                    'repeatWordsNowText',
+                  lang,
+                  dynamicVariables: {
+                    word: newWord.word,
+                    translation:
+                      newWord.translation,
+                    examples: formattedExamples
+                  },
+                  wordId: newWord.id + ''
+                }
+              );
+            } catch (textError) {
+              console.error(
+                'Помилка при відправці текстового повідомлення:',
+                textError
+              );
+            }
+          }
+        } else if (newWord.imageExample) {
+          console.log(
+            'Відправляємо повідомлення з фото'
+          );
+          try {
+            await messageService.TelegramSendMessage(
+              {
+                messageType: 'sendPhoto',
+                chatId: dto.chatId,
+                templateName:
+                  'repeatWordsNowPhoto',
+                lang,
+                dynamicVariables: {
+                  word: newWord.word,
+                  translation:
+                    newWord.translation,
+                  examples: formattedExamples
+                },
+                wordId: newWord.id + '',
+                imageUrl: newWord.imageExample
+              }
+            );
+          } catch (photoError) {
+            console.error(
+              'Помилка при відправці фото:',
+              photoError
+            );
+            // Якщо не вдалося відправити фото, відправляємо текстове повідомлення
+            await messageService.TelegramSendMessage(
+              {
+                chatId: dto.chatId,
+                templateName:
+                  'repeatWordsNowText',
+                lang,
+                dynamicVariables: {
+                  word: newWord.word,
+                  translation:
+                    newWord.translation,
+                  examples: formattedExamples
+                },
+                wordId: newWord.id + ''
+              }
+            );
+          }
+        } else {
+          console.log(
+            'Відправляємо текстове повідомлення'
+          );
+          await messageService.TelegramSendMessage(
+            {
+              chatId: dto.chatId,
+              templateName: 'repeatWordsNowText',
+              lang,
+              dynamicVariables: {
+                word: newWord.word,
+                translation: newWord.translation,
+                examples: formattedExamples
+              },
+              wordId: newWord.id + ''
+            }
+          );
+        }
       } else {
         await messageService.TelegramSendMessage({
           chatId: dto.chatId,
@@ -442,7 +893,7 @@ export async function handleLearnWordsCommand(
       );
 
       // Перевіряємо, чи успішно відбулася конвертація
-      if (isNaN(learnedWordId)) {
+      if (isNaN(needToLearnWordId)) {
         throw new Error('Невалідний ID слова');
       }
       await wordService.updateWord(
@@ -596,7 +1047,9 @@ export async function handleExistingCustomer(
           await wordService.createWord({
             word: extractedText,
             translation,
-            examples: JSON.stringify(examples),
+            examples: Array.isArray(examples)
+              ? JSON.stringify(examples)
+              : examples,
             customerId: customer.id,
             needToLearn: true,
             videoExample: null,
@@ -650,13 +1103,77 @@ export async function handleExistingCustomer(
         try {
           const text =
             dto.originalWebhook.message.text;
+
+          // Check if the input is a valid JSON with all required fields
+          let jsonData;
+          try {
+            jsonData = JSON.parse(text);
+            const hasRequiredFields =
+              jsonData.word &&
+              jsonData.translation &&
+              jsonData.examples !== undefined;
+
+            if (hasRequiredFields) {
+              // Use direct JSON data without calling AI service
+              await wordService.createWord({
+                word: jsonData.word,
+                translation: jsonData.translation,
+                examples: Array.isArray(
+                  jsonData.examples
+                )
+                  ? JSON.stringify(
+                      jsonData.examples
+                    )
+                  : jsonData.examples,
+                customerId: customer.id,
+                needToLearn:
+                  jsonData.needToLearn !==
+                  undefined
+                    ? jsonData.needToLearn
+                    : true,
+                videoExample:
+                  jsonData.videoExample || null,
+                imageExample:
+                  jsonData.imageExample || null
+              });
+
+              await messageService.TelegramSendMessage(
+                {
+                  chatId: dto.chatId,
+                  templateName: 'savedWord',
+                  lang,
+                  dynamicVariables: {
+                    word: jsonData.word,
+                    translation:
+                      jsonData.translation,
+                    examples:
+                      (Array.isArray(
+                        jsonData.examples
+                      )
+                        ? JSON.stringify(
+                            jsonData.examples
+                          )
+                        : jsonData.examples) ||
+                      'No examples provided'
+                  }
+                }
+              );
+              return;
+            }
+          } catch (e) {
+            // Not a valid JSON, continue with normal processing
+          }
+
+          // Regular word processing with AI
           const { translation, examples } =
             await aiService.processText(text);
 
           await wordService.createWord({
             word: text,
             translation,
-            examples,
+            examples: Array.isArray(examples)
+              ? JSON.stringify(examples)
+              : examples,
             customerId: customer.id,
             needToLearn: true
           });

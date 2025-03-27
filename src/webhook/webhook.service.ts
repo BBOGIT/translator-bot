@@ -23,15 +23,33 @@ export class WebhookService {
   async getTelegramWebhook(
     dto: TelegramWebhookBodyDto
   ): Promise<string> {
-    const responseDto = this.parseWebhook(dto);
-    this.logger.log(
-      `Received Telegram webhook: ${JSON.stringify(
-        responseDto
-      )}`
-    );
-    this.botService.checkState(responseDto);
+    try {
+      const responseDto = this.parseWebhook(dto);
+      this.logger.log(
+        `Received Telegram webhook: ${JSON.stringify(
+          responseDto
+        )}`
+      );
 
-    return 'ok';
+      try {
+        await this.botService.checkState(
+          responseDto
+        );
+      } catch (error) {
+        this.logger.error(
+          `Помилка при обробці вебхука: ${error.message}`,
+          error.stack
+        );
+      }
+
+      return 'ok';
+    } catch (error) {
+      this.logger.error(
+        `Критична помилка при обробці вебхука: ${error.message}`,
+        error.stack
+      );
+      return 'ok'; // Завжди повертаємо "ok", щоб Telegram не надсилав вебхук повторно
+    }
   }
 
   private parseWebhook(

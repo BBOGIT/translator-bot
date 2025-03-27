@@ -75,8 +75,65 @@ export class DeepseekService
       }
 
       try {
+        // Clean up content and fix common format issues before parsing
+        let cleanContent = content
+          .replace(/\t+$/g, '')
+          .replace(/\n\s+\n/g, '');
+
+        // Fix numbered examples format: "examples": "1. First example", "2. Second example"
+        if (
+          cleanContent.includes('"examples":') &&
+          (cleanContent.match(
+            /"examples":\s*"[^"]*?[0-9]+\.\s+[^"]*?"/
+          ) ||
+            cleanContent.match(
+              /"examples":\s*"[^"]*?"[\s,]+"[0-9]+\.\s+/
+            ))
+        ) {
+          // Extract all examples (including those split across multiple properties)
+          const examplesRegex =
+            /"examples":\s*"([^"]*)"|"([0-9]+\.\s+[^"]*)"/g;
+          const examples = [];
+          let match;
+
+          while (
+            (match =
+              examplesRegex.exec(
+                cleanContent
+              )) !== null
+          ) {
+            const example = match[1] || match[2];
+            if (example) examples.push(example);
+          }
+
+          // Join all examples into one string
+          const allExamples = examples.join(' ');
+
+          // Split by numbered pattern and filter out empty strings
+          const splitExamples = allExamples
+            .split(/(?=[0-9]+\.\s+)/)
+            .filter(ex => ex.trim().length > 0)
+            .map(ex => ex.trim());
+
+          // Create proper JSON array of examples
+          const fixedExamplesJson =
+            JSON.stringify(splitExamples);
+
+          // Replace the incorrect examples format with proper JSON array
+          cleanContent = cleanContent.replace(
+            /"examples":\s*"[^"]*?"(?:[\s,]+"[0-9]+\.\s+[^"]*?")*/,
+            `"examples": ${fixedExamplesJson}`
+          );
+        } else {
+          // Apply the original fix for non-numbered examples
+          cleanContent = cleanContent.replace(
+            /(\n|,)\s+"examples":\s+"([^"]+)"/g,
+            '$1"examples": ["$2"]'
+          );
+        }
+
         const parsedResponse = JSON.parse(
-          content
+          cleanContent
         ) as AIResponse;
         this.validateResponse(parsedResponse);
         return this.formatResponse(
@@ -168,8 +225,65 @@ export class DeepseekService
       }
 
       try {
+        // Clean up content and fix common format issues before parsing
+        let cleanContent = content
+          .replace(/\t+$/g, '')
+          .replace(/\n\s+\n/g, '');
+
+        // Fix numbered examples format: "examples": "1. First example", "2. Second example"
+        if (
+          cleanContent.includes('"examples":') &&
+          (cleanContent.match(
+            /"examples":\s*"[^"]*?[0-9]+\.\s+[^"]*?"/
+          ) ||
+            cleanContent.match(
+              /"examples":\s*"[^"]*?"[\s,]+"[0-9]+\.\s+/
+            ))
+        ) {
+          // Extract all examples (including those split across multiple properties)
+          const examplesRegex =
+            /"examples":\s*"([^"]*)"|"([0-9]+\.\s+[^"]*)"/g;
+          const examples = [];
+          let match;
+
+          while (
+            (match =
+              examplesRegex.exec(
+                cleanContent
+              )) !== null
+          ) {
+            const example = match[1] || match[2];
+            if (example) examples.push(example);
+          }
+
+          // Join all examples into one string
+          const allExamples = examples.join(' ');
+
+          // Split by numbered pattern and filter out empty strings
+          const splitExamples = allExamples
+            .split(/(?=[0-9]+\.\s+)/)
+            .filter(ex => ex.trim().length > 0)
+            .map(ex => ex.trim());
+
+          // Create proper JSON array of examples
+          const fixedExamplesJson =
+            JSON.stringify(splitExamples);
+
+          // Replace the incorrect examples format with proper JSON array
+          cleanContent = cleanContent.replace(
+            /"examples":\s*"[^"]*?"(?:[\s,]+"[0-9]+\.\s+[^"]*?")*/,
+            `"examples": ${fixedExamplesJson}`
+          );
+        } else {
+          // Apply the original fix for non-numbered examples
+          cleanContent = cleanContent.replace(
+            /(\n|,)\s+"examples":\s+"([^"]+)"/g,
+            '$1"examples": ["$2"]'
+          );
+        }
+
         const parsedResponse = JSON.parse(
-          content
+          cleanContent
         ) as AIResponse;
         this.validateResponse(parsedResponse);
         return this.formatResponse(

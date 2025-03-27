@@ -96,8 +96,24 @@ export class WordRepetitionJob {
         wordId: word.id.toString()
       };
 
+      // Додаткове логування даних про відео
+      this.logger.log(
+        `[sendRepetitionNotification] Слово: "${word.word}", videoExample = "${word.videoExample}"`
+      );
+      this.logger.log(
+        `[sendRepetitionNotification] Тип videoExample: ${typeof word.videoExample}, довжина: ${
+          word.videoExample
+            ? word.videoExample.length
+            : 0
+        }`
+      );
+
       // Відправляємо повідомлення в залежності від наявності відео
-      if (word.videoExample) {
+      if (
+        word.videoExample &&
+        word.videoExample !== 'null' &&
+        word.videoExample.trim() !== ''
+      ) {
         await this.messageService.TelegramSendMessage(
           {
             messageType: 'sendVideo',
