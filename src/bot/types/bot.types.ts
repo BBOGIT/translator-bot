@@ -13,7 +13,8 @@ export interface Customer {
   updatedAt: Date;
   chatId: string;
   state: string;
-  firstName: string;
-  lastName: string;
-  channel: string;
+  firstName: string | null;
+  lastName: string | null;
+  channel: string | null;
+  repetitionTime: string | null;
 }

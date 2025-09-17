@@ -1,8 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -17,6 +16,7 @@ model User {
 
   email String @unique
   hash  String
+  hashedRt String?
 
   firstName String?
   lastName  String?
@@ -35,8 +35,10 @@ model Customer {
   firstName String?
   lastName  String?
   channel String?
+  repetitionTime String?
   Word      Word[]
 
+  @@index([state])
   @@map("customers")
 }
 
@@ -63,6 +65,9 @@ model Word {
   customer   Customer @relation(fields: [customerId], references: [id])
 
   @@unique([customerId, word])
+  @@index([customerId, needToLearn])
+  @@index([needToLearn, lastNotificationAt])
+  @@index([updatedAt])
   @@map("words")
 }
 
@@ -77,5 +82,7 @@ model WordRepetition {
   
   intervalNumber Int  @default(1)
 
+  @@index([wordId])
+  @@index([createdAt])
   @@map("word_repetitions")
 }

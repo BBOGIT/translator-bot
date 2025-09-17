@@ -4,13 +4,21 @@ import {
 } from '@nestjs/common';
 import {
   TelegramWebhookBodyDto,
-  WebhookResponseDto
+  WebhookResponseDto,
+  MessageDto,
+  CallbackQueryDto,
+  EditedMessageDto
 } from './dto';
 import {
   WebhookTypeEnum,
   ChannelEnum
 } from './enum';
-import { BotService } from 'src/bot/bot.service';
+import { BotService } from '../bot/bot.service';
+
+type WebhookSource =
+  | MessageDto
+  | CallbackQueryDto
+  | EditedMessageDto;
 
 @Injectable()
 export class WebhookService {
@@ -32,12 +40,12 @@ export class WebhookService {
       );
 
       try {
-        await this.botService.checkState(
+        await this.botService.handleWebhookResponse(
           responseDto
         );
       } catch (error) {
         this.logger.error(
-          `Помилка при обробці вебхука: ${error.message}`,
+          `Error processing webhook: ${error.message}`,
           error.stack
         );
       }
@@ -45,10 +53,10 @@ export class WebhookService {
       return 'ok';
     } catch (error) {
       this.logger.error(
-        `Критична помилка при обробці вебхука: ${error.message}`,
+        `Critical error processing webhook: ${error.message}`,
         error.stack
       );
-      return 'ok'; // Завжди повертаємо "ok", щоб Telegram не надсилав вебхук повторно
+      return 'ok';
     }
   }
 
@@ -61,6 +69,15 @@ export class WebhookService {
       this.getSourceAndType(dto);
     const { from } = source;
 
+    let messageId: string | undefined;
+    if ('message' in source && source.message) {
+      messageId = String(
+        source.message.message_id
+      );
+    } else if ('message_id' in source) {
+      messageId = String(source.message_id);
+    }
+
     return {
       chatId: String(from.id),
       lang: from.language_code,
@@ -69,6 +86,7 @@ export class WebhookService {
       firstName: from.first_name ?? null,
       lastName: from.last_name ?? null,
       channel: ChannelEnum.telegram,
+      messageId,
       originalWebhook: dto
     };
   }
@@ -76,7 +94,7 @@ export class WebhookService {
   private getSourceAndType(
     dto: TelegramWebhookBodyDto
   ): {
-    source: any;
+    source: WebhookSource;
     webhookType: WebhookTypeEnum;
   } {
     if (dto.message) {
@@ -94,9 +112,8 @@ export class WebhookService {
       };
     }
     if (dto.edited_message) {
-      const source = dto.edited_message;
       return {
-        source,
+        source: dto.edited_message,
         webhookType: WebhookTypeEnum.editedMessage
       };
     }
@@ -104,7 +121,7 @@ export class WebhookService {
   }
 
   private getMessageType(
-    message: any
+    message: MessageDto
   ): WebhookTypeEnum {
     const typeMap: Record<
       string,
@@ -129,49 +146,79 @@ export class WebhookService {
   }
 
   private extractText(
-    source: any,
+    source: WebhookSource,
     type: WebhookTypeEnum
   ): string | null {
-    const extractors: Record<
-      WebhookTypeEnum,
-      () => string | null
+    const extractors: Partial<
+      Record<WebhookTypeEnum, () => string | null>
     > = {
-      [WebhookTypeEnum.location]: () =>
-        `${source.location.latitude},${source.location.longitude}`,
-      [WebhookTypeEnum.document]: () =>
-        `${source.document.file_name}${
-          source.caption
-            ? ` ${source.caption}`
-            : ''
-        }`,
-      [WebhookTypeEnum.sticker]: () =>
-        source.sticker.emoji,
-      [WebhookTypeEnum.photo]: () =>
-        source.caption ?? null,
-      [WebhookTypeEnum.video]: () =>
-        source.caption ?? null,
-      [WebhookTypeEnum.audio]: () =>
-        `${source.audio.title}${
-          source.audio.performer
-            ? ` ${source.audio.performer}`
-            : ''
-        }${
-          source.caption
-            ? ` ${source.caption}`
-            : ''
-        }`,
+      [WebhookTypeEnum.location]: () => {
+        const msg = source as MessageDto;
+        return msg.location
+          ? `${msg.location.latitude},${msg.location.longitude}`
+          : null;
+      },
+      [WebhookTypeEnum.document]: () => {
+        const msg = source as MessageDto;
+        return msg.document
+          ? `${msg.document.file_name}${
+              msg.caption ? ` ${msg.caption}` : ''
+            }`
+          : null;
+      },
+      [WebhookTypeEnum.sticker]: () => {
+        const msg = source as MessageDto;
+        return msg.sticker?.emoji ?? null;
+      },
+      [WebhookTypeEnum.photo]: () => {
+        const msg = source as MessageDto;
+        return msg.caption ?? null;
+      },
+      [WebhookTypeEnum.video]: () => {
+        const msg = source as MessageDto;
+        return msg.caption ?? null;
+      },
+      [WebhookTypeEnum.audio]: () => {
+        const msg = source as MessageDto;
+        return msg.audio
+          ? `${msg.audio.title}${
+              msg.audio.performer
+                ? ` ${msg.audio.performer}`
+                : ''
+            }${
+              msg.caption ? ` ${msg.caption}` : ''
+            }`
+          : null;
+      },
       [WebhookTypeEnum.voice]: () => null,
-      [WebhookTypeEnum.animation]: () =>
-        source.animation.file_name,
-      [WebhookTypeEnum.contact]: () =>
-        source.contact.phone_number,
-      [WebhookTypeEnum.callbackQuery]: () =>
-        source.data,
-      [WebhookTypeEnum.text]: () => source.text,
-      [WebhookTypeEnum.editedMessage]: () =>
-        source.text ?? source.caption ?? null
+      [WebhookTypeEnum.animation]: () => {
+        const msg = source as MessageDto;
+        return msg.animation?.file_name ?? null;
+      },
+      [WebhookTypeEnum.contact]: () => {
+        const msg = source as MessageDto;
+        return msg.contact?.phone_number ?? null;
+      },
+      [WebhookTypeEnum.callbackQuery]: () => {
+        const cbq = source as CallbackQueryDto;
+        return cbq.data;
+      },
+      [WebhookTypeEnum.text]: () => {
+        const msg = source as MessageDto;
+        return msg.text;
+      },
+      [WebhookTypeEnum.editedMessage]: () => {
+        const editedMsg =
+          source as EditedMessageDto;
+        return (
+          editedMsg.text ??
+          editedMsg.caption ??
+          null
+        );
+      }
     };
 
-    return extractors[type]?.() ?? null;
+    const extractor = extractors[type];
+    return extractor ? extractor() : null;
   }
 }

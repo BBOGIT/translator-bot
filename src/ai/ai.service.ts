@@ -10,7 +10,8 @@ import { OpenAIService } from './providers/openai.service';
 import { DeepseekService } from './providers/deepseek.service';
 import { IAIProvider } from './interfaces/ai-provider.interface';
 import { AIResponse } from './interfaces/ai-response.interface';
-import { AIServiceError } from './errors/ai.errors';
+import { AIProviderError } from '../common/errors/domain-errors';
+import { CatchErrors } from '../common/decorators/catch-errors.decorator';
 
 @Injectable()
 export class AiService {
@@ -28,150 +29,132 @@ export class AiService {
     this.logProviderInitialization();
   }
 
+  @CatchErrors({
+    errorMessage: 'Failed to process text',
+    errorType: AIProviderError,
+    context: (instance, _, args) => ({
+      provider: instance.config.provider,
+      textLength: args[0]?.length,
+      timestamp: new Date().toISOString(),
+      modelConfig: instance.getModelConfig(),
+      maxTokens: instance.getMaxTokens()
+    })
+  })
   async processText(
     text: string
   ): Promise<AIResponse> {
     const startTime = Date.now();
 
-    try {
-      // Log input details
-      this.logger.debug(
-        'Starting text processing',
-        {
-          provider: this.config.provider,
-          textLength: text.length,
-          timestamp: new Date().toISOString(),
-          configDetails: {
-            model: this.getModelConfig(),
-            maxTokens: this.getMaxTokens()
-          }
+    // Log input details
+    this.logger.debug(
+      'Starting text processing',
+      {
+        provider: this.config.provider,
+        textLength: text.length,
+        timestamp: new Date().toISOString(),
+        configDetails: {
+          model: this.getModelConfig(),
+          maxTokens: this.getMaxTokens()
         }
-      );
+      }
+    );
 
-      // Log pre-processing state
-      this.logger.debug('Pre-processing checks', {
-        isTextEmpty: !text,
-        isProviderReady: !!this.provider,
-        providerType: this.config.provider
-      });
+    // Log pre-processing state
+    this.logger.debug('Pre-processing checks', {
+      isTextEmpty: !text,
+      isProviderReady: !!this.provider,
+      providerType: this.config.provider
+    });
 
-      const response =
-        await this.provider.processText(text);
+    const response =
+      await this.provider.processText(text);
 
-      // Log response details
-      this.logger.debug(
-        'Text processing completed',
-        {
-          processingTime: Date.now() - startTime,
-          responseDetails: {
-            hasTranslation:
-              !!response.translation,
-            translationLength:
-              response.translation?.length,
-            hasExamples: !!response.examples,
-            examplesCount:
-              response.examples?.length
-          }
+    // Log response details
+    this.logger.debug(
+      'Text processing completed',
+      {
+        processingTime: Date.now() - startTime,
+        responseDetails: {
+          hasTranslation: !!response.translation,
+          translationLength:
+            response.translation?.length,
+          hasExamples: !!response.examples,
+          examplesCount: response.examples?.length
         }
-      );
+      }
+    );
 
-      return response;
-    } catch (error) {
-      // Enhanced error logging
-      this.logger.error(
-        'Text processing failed',
-        {
-          error,
-          errorType: error.constructor.name,
-          errorMessage: error.message,
-          errorStack: error.stack,
-          processingTime: Date.now() - startTime,
-          providerDetails: {
-            type: this.config.provider
-          },
-          requestDetails: {
-            textLength: text.length,
-            timestamp: new Date().toISOString()
-          }
-        }
-      );
-
-      throw new AIServiceError(
-        `Failed to process text: ${error.message}`,
-        error
-      );
-    }
+    return response;
   }
 
+  @CatchErrors({
+    errorMessage: 'Failed to process image',
+    errorType: AIProviderError,
+    context: (instance, _, args) => ({
+      provider: instance.config.provider,
+      imageSize: args[0]?.length,
+      timestamp: new Date().toISOString(),
+      providerConfig: instance.getProviderConfig()
+    })
+  })
   async processImage(
     imageBuffer: Buffer
   ): Promise<AIResponse> {
     const startTime = Date.now();
 
-    try {
-      // Log image processing start
-      this.logger.debug(
-        'Starting image processing',
-        {
-          provider: this.config.provider,
-          imageSize: imageBuffer.length,
-          timestamp: new Date().toISOString(),
-          imageConfig: this.config.getImageConfig
-        }
-      );
-
-      if (
-        !this.config.isAllowedImageSize(
-          imageBuffer.length
-        )
-      ) {
-        this.logger.warn(
-          'Image size validation failed',
-          {
-            actualSize: imageBuffer.length,
-            maxAllowedSize:
-              this.config.getImageConfig.maxSize
-          }
-        );
-
-        throw new AIServiceError(
-          `Image size (${imageBuffer.length} bytes) exceeds maximum allowed size (${this.config.getImageConfig.maxSize} bytes)`
-        );
+    // Log image processing start
+    this.logger.debug(
+      'Starting image processing',
+      {
+        provider: this.config.provider,
+        imageSize: imageBuffer.length,
+        timestamp: new Date().toISOString(),
+        imageConfig: this.config.getImageConfig
       }
+    );
 
-      const response =
-        await this.provider.processImage(
-          imageBuffer
-        );
-
-      return response;
-    } catch (error) {
-      // Enhanced error logging for image processing
-      this.logger.error(
-        'Image processing failed',
+    // Validate image size
+    if (
+      !this.config.isAllowedImageSize(
+        imageBuffer.length
+      )
+    ) {
+      this.logger.warn(
+        'Image size validation failed',
         {
-          errorType: error.constructor.name,
-          errorMessage: error.message,
-          errorStack: error.stack,
-          error,
-          processingTime: Date.now() - startTime,
-          imageDetails: {
-            size: imageBuffer.length,
-            maxAllowedSize:
-              this.config.getImageConfig.maxSize
-          },
-          providerDetails: {
-            type: this.config.provider,
-            config: this.getProviderConfig()
-          }
+          actualSize: imageBuffer.length,
+          maxAllowedSize:
+            this.config.getImageConfig.maxSize
         }
       );
 
-      throw new AIServiceError(
-        `Failed to process image: ${error.message}`,
-        error
+      throw new AIProviderError(
+        this.config.provider,
+        `Image size (${imageBuffer.length} bytes) exceeds maximum allowed size (${this.config.getImageConfig.maxSize} bytes)`
       );
     }
+
+    const response =
+      await this.provider.processImage(
+        imageBuffer
+      );
+
+    // Log response completion
+    this.logger.debug(
+      'Image processing completed',
+      {
+        processingTime: Date.now() - startTime,
+        responseDetails: {
+          hasTranslation: !!response.translation,
+          translationLength:
+            response.translation?.length,
+          hasExamples: !!response.examples,
+          examplesCount: response.examples?.length
+        }
+      }
+    );
+
+    return response;
   }
 
   private getProvider(): IAIProvider {
@@ -200,7 +183,10 @@ export class AiService {
           error: error.message
         }
       );
-      throw error;
+      throw new AIProviderError(
+        this.config.provider,
+        `Failed to initialize AI provider: ${error.message}`
+      );
     }
   }
 

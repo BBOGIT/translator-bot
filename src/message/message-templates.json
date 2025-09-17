@@ -75,7 +75,7 @@
         "name": "repeatWords",
         "description": "repeatWords",
         "channel": "telegram",
-        "body": "{\"text\":\"{{repeatWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"callback_data\":\"/repeatWordsNow\"}, {\"text\":\"{{repeatWordsScheduleButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}], [{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"MarkdownV2\"}"
+        "body": "{\"text\":\"{{repeatWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"callback_data\":\"/repeatWordsNow\"}, {\"text\":\"{{repeatWordsScheduleButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}], [{\"text\":\"{{viewSettingsButton}}\",\"callback_data\":\"/viewSettings\"}, {\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"MarkdownV2\"}"
     },
     {
         "name": "repeatWordsNow",
@@ -159,13 +159,13 @@
         "name": "learnedWordsList",
         "description": "learnedWordsList",
         "channel": "telegram",
-        "body": "{\"text\":\"{{learnedWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":{{buttonsArray}}}}"
+        "body": "{\"text\":\"{{learnedWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":{{buttonsArray}}},\"parse_mode\":\"html\"}"
     },
     {
         "name": "learnedWordsListWithPagination",
         "description": "learnedWordsList with word buttons and pagination",
         "channel": "telegram",
-        "body": "{\"text\":\"{{learnedWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":{{buttonsArray}}}}"
+        "body": "{\"text\":\"{{learnedWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":{{buttonsArray}}},\"parse_mode\":\"html\"}"
     },
     {
         "name": "learnedWordsListSimple",
@@ -178,5 +178,59 @@
         "description": "errorMessage",
         "channel": "telegram",
         "body": "{\"text\":\"❌ {{errorMessage}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "startRepetition",
+        "description": "Повідомлення про початок повторення слів",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{startRepetitionText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "repetitionError",
+        "description": "Повідомлення про помилку при повторенні слів",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{repetitionErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "detailedProgress",
+        "description": "Детальний прогрес користувача з статистикою та кнопками",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{progressText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":{{buttonsArray}}},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "askForRepetitionTime",
+        "description": "Запит на введення часу для нагадувань",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{askForRepetitionTimeText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{time7Button}}\",\"callback_data\":\"07:00\"}, {\"text\":\"{{time9Button}}\",\"callback_data\":\"09:00\"}], [{\"text\":\"{{time19Button}}\",\"callback_data\":\"19:00\"}, {\"text\":\"{{time21Button}}\",\"callback_data\":\"21:00\"}], [{\"text\":\"{{customTimeButton}}\",\"callback_data\":\"custom_time\"}, {\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "repetitionTimeConfirmed",
+        "description": "Підтвердження налаштування часу нагадувань",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{repetitionTimeConfirmedText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "repetitionTimeError",
+        "description": "Помилка введення часу нагадувань",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{repetitionTimeErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "repetitionPrompt",
+        "description": "Нагадування про повторення слів",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{repetitionPromptText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"callback_data\":\"/repeatWordsNow\"}], [{\"text\":\"{{remindLaterButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "customTimePrompt",
+        "description": "Запит на введення власного часу",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{customTimePromptText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "viewSettings",
+        "description": "Показ поточних налаштувань часу",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{viewSettingsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{changeTimeButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}, {\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
     }
 ]

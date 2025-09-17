@@ -1,7 +1,8 @@
 // src/jobs/word-repetition.job.ts
 import {
   Injectable,
-  Logger
+  Logger,
+  Inject
 } from '@nestjs/common';
 import {
   Cron,
@@ -9,7 +10,17 @@ import {
 } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessageService } from '../message/message.service';
+import { Word, Customer } from '@prisma/client';
+import { WordService } from '../word/word.service';
+import { CacheInterface } from '../cache/interfaces/cache.interface';
 //import { addDays } from 'date-fns';
+
+// Define the type for Word with Customer included
+type WordWithCustomer = Word & {
+  customer: Customer & {
+    repetitionTime?: string | null;
+  };
+};
 
 @Injectable()
 export class WordRepetitionJob {
@@ -26,77 +37,106 @@ export class WordRepetitionJob {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    private readonly wordService: WordService,
+    @Inject('CACHE_SERVICE')
+    private readonly cacheService: CacheInterface
   ) {}
 
   @Cron(CronExpression.EVERY_HOUR)
   async handleWordRepetition() {
     try {
       this.logger.log(
-        'Початок планової перевірки слів для повторення'
+        'Hourly check for word repetitions'
+      );
+      const currentHour = new Date().getHours();
+      const timeString = `${String(currentHour).padStart(2, '0')}:00`;
+
+      const customers =
+        await this.prisma.customer.findMany();
+
+      const customersToNotify = customers.filter(
+        customer =>
+          customer.repetitionTime ===
+            timeString ||
+          (customer.repetitionTime === null &&
+            timeString === '20:00')
       );
 
-      const wordsToRepeat =
-        await this.findWordsForRepetition();
+      for (const customer of customersToNotify) {
+        const wordsToRepeat =
+          await this.wordService.getWordsForRepetition(
+            customer.id
+          );
 
-      for (const word of wordsToRepeat) {
-        await this.sendRepetitionNotification(
-          word
-        );
-        this.logger.debug(
-          `Оброблено слово: ${word.word} для користувача ${word.customerId}`
-        );
+        if (wordsToRepeat.length > 0) {
+          const count = wordsToRepeat.length;
+          const wordForm = this.getWordForm(count);
+          
+          await this.messageService.TelegramSendMessage(
+            {
+              chatId: customer.chatId,
+              templateName: 'repetitionPrompt',
+              lang: 'uk',
+              dynamicVariables: {
+                count: count.toString(),
+                wordForm: wordForm
+              }
+            }
+          );
+        }
       }
-
-      this.logger.log(
-        `Завершено обробку ${wordsToRepeat.length} слів для повторення`
-      );
     } catch (error) {
       this.logger.error(
-        'Помилка під час обробки повторень слів:',
+        'Error handling word repetitions:',
         error
       );
     }
   }
 
-  private async findWordsForRepetition() {
-    // Знаходимо слова, які потребують повторення
-    return this.prisma.word.findMany({
-      where: {
-        needToLearn: false,
-        // Перевіряємо, що не було нагадувань сьогодні
-        OR: [
-          { lastNotificationAt: null },
-          {
-            lastNotificationAt: {
-              lt: new Date(
-                new Date().setHours(0, 0, 0, 0)
-              )
-            }
-          }
-        ]
-      },
-      include: {
-        customer: true
-      }
-    });
+  private async findWordsForRepetition(): Promise<
+    WordWithCustomer[]
+  > {
+    // Використовуємо WordService для отримання слів через CQRS
+    return this.wordService.getWordsForRepetition();
   }
 
   private async sendRepetitionNotification(
-    word: any
+    word: WordWithCustomer
   ) {
     try {
+      // Обробка examples - парсинг JSON якщо потрібно
+      let processedExamples = '';
+      if (word.examples) {
+        try {
+          // Якщо examples є JSON-рядком, парсимо його
+          const examplesArray = JSON.parse(
+            word.examples
+          );
+          if (Array.isArray(examplesArray)) {
+            processedExamples =
+              examplesArray.join('\n');
+          } else {
+            processedExamples = word.examples;
+          }
+        } catch {
+          // Якщо парсинг не вдався, використовуємо як є
+          processedExamples = word.examples;
+        }
+      }
+
       const messageData = {
         chatId: word.customer.chatId,
         lang: 'uk',
         dynamicVariables: {
           word: word.word,
-          translation: word.translation
+          translation: word.translation,
+          examples: processedExamples
         },
         wordId: word.id.toString()
       };
 
-      // Додаткове логування даних про відео
+      // Додаткове логування даних про відео та приклади
       this.logger.log(
         `[sendRepetitionNotification] Слово: "${word.word}", videoExample = "${word.videoExample}"`
       );
@@ -106,6 +146,9 @@ export class WordRepetitionJob {
             ? word.videoExample.length
             : 0
         }`
+      );
+      this.logger.log(
+        `[sendRepetitionNotification] Examples: "${processedExamples}"`
       );
 
       // Відправляємо повідомлення в залежності від наявності відео
@@ -131,11 +174,10 @@ export class WordRepetitionJob {
         );
       }
 
-      // Оновлюємо час останнього нагадування
-      await this.prisma.word.update({
-        where: { id: word.id },
-        data: { lastNotificationAt: new Date() }
-      });
+      // Оновлюємо час останнього нагадування через CQRS
+      await this.wordService.updateWordNotification(
+        word.id
+      );
     } catch (error) {
       this.logger.error(
         `Помилка при відправці нагадування для слова ${word.id}:`,
@@ -150,27 +192,13 @@ export class WordRepetitionJob {
     success: boolean
   ) {
     try {
-      const word =
-        await this.prisma.word.findUnique({
-          where: { id: wordId }
-        });
-
-      if (!word) {
-        throw new Error(
-          `Слово з ID ${wordId} не знайдено`
-        );
-      }
-
-      const updates =
-        this.calculateNextRepetition(
-          word,
+      // Використовуємо WordService для оновлення статусу через CQRS
+      return await this.wordService.updateWordRepetitionStatus(
+        {
+          wordId,
           success
-        );
-
-      await this.prisma.word.update({
-        where: { id: wordId },
-        data: updates
-      });
+        }
+      );
     } catch (error) {
       this.logger.error(
         `Помилка при оновленні статусу повторення для слова ${wordId}:`,
@@ -180,34 +208,102 @@ export class WordRepetitionJob {
     }
   }
 
-  private calculateNextRepetition(
-    word: any,
-    success: boolean
-  ) {
-    if (success) {
-      const currentRepeatCount =
-        word.repeatCount || 0;
-      const nextInterval =
-        this.REPEAT_INTERVALS[
-          Math.min(
-            currentRepeatCount,
-            this.REPEAT_INTERVALS.length - 1
-          )
-        ];
+  /**
+   * Публічний метод для запуску повторення слів для конкретного користувача
+   * Використовується для ручного запуску повторення слів з бота
+   *
+   * @param customerId ID користувача
+   * @param chatId ID чату
+   * @param lang Мова
+   */
+  async startRepetition(
+    customerId: number,
+    chatId: string,
+    lang: string
+  ): Promise<void> {
+    try {
+      this.logger.log(
+        `Запуск повторення слів для користувача ${customerId}`
+      );
 
-      return {
-        repeatCount: currentRepeatCount + 1,
-        lastRepeatAt: new Date(),
-        needToLearn:
-          currentRepeatCount + 1 <
-          this.REPEAT_INTERVALS.length
-      };
+      // Знаходимо слова для повторення для конкретного користувача через CQRS
+      const wordsToRepeat =
+        await this.wordService.getWordsForRepetition(
+          customerId
+        );
+
+      if (wordsToRepeat.length === 0) {
+        // Якщо слів для повторення немає, відправляємо повідомлення
+        await this.messageService.TelegramSendMessage(
+          {
+            chatId,
+            templateName: 'notFoundWords',
+            lang
+          }
+        );
+        return;
+      }
+
+      // Відправляємо повідомлення про початок повторення
+      await this.messageService.TelegramSendMessage(
+        {
+          chatId,
+          templateName: 'startRepetition',
+          lang,
+          dynamicVariables: {
+            wordsCount:
+              wordsToRepeat.length.toString()
+          }
+        }
+      );
+
+      // Зберігаємо ID слів у кеш для сесії
+      const wordIds = wordsToRepeat.map(
+        word => word.id
+      );
+      await this.cacheService.set(
+        `repetition_session:${customerId}`,
+        JSON.stringify(wordIds),
+        3600 // Зберігаємо на годину
+      );
+
+      // Відправляємо перше слово
+      if (wordsToRepeat.length > 0) {
+        await this.sendRepetitionNotification(
+          wordsToRepeat[0]
+        );
+      }
+
+      this.logger.log(
+        `Завершено ініціалізацію повторення для користувача ${customerId}`
+      );
+    } catch (error) {
+      this.logger.error(
+        `Помилка під час запуску повторення слів для користувача ${customerId}:`,
+        error
+      );
+
+      // Відправляємо повідомлення про помилку
+      await this.messageService.TelegramSendMessage(
+        {
+          chatId,
+          templateName: 'repetitionError',
+          lang
+        }
+      );
+    }
+  }
+
+  /**
+   * Повертає правильну форму слова "слово" в залежності від кількості
+   */
+  private getWordForm(count: number): string {
+    if (count === 1) {
+      return 'слово';
+    } else if (count >= 2 && count <= 4) {
+      return 'слова';
     } else {
-      return {
-        repeatCount: 0,
-        lastRepeatAt: new Date(),
-        needToLearn: true
-      };
+      return 'слів';
     }
   }
 }

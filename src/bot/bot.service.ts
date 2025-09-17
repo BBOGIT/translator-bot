@@ -8,15 +8,14 @@ import { WebhookResponseDto } from '../webhook/dto';
 import { RedisService } from '../redis/redis.service';
 import { WordService } from '../word/word.service';
 import { BotConfig } from './bot.config';
-import { Customer } from '../customer/types';
-import {
-  handleLearnWordsCommand,
-  handleExistingCustomer,
-  handleNewCustomer
-} from './bot.handlers';
-import { WordRepetitionJob } from 'src/jobs/word-repetition.job';
+import { Customer } from '../customer/types/customer.type';
+import { WordRepetitionJob } from '../jobs/word-repetition.job';
 import { TelegramService } from '../telegram/telegram.service';
 import { AiService } from '../ai/ai.service';
+import {
+  CommandDispatcher,
+  CommandContext
+} from './handlers';
 
 @Injectable()
 export class BotService {
@@ -25,115 +24,73 @@ export class BotService {
   );
 
   constructor(
-    private customerService: CustomerService,
-    private messageService: MessageService,
+    private readonly customerService: CustomerService,
+    private readonly messageService: MessageService,
     private readonly redisService: RedisService,
     private readonly wordService: WordService,
     private readonly config: BotConfig,
-    private wordRepetitionJob: WordRepetitionJob,
+    private readonly wordRepetitionJob: WordRepetitionJob,
     private readonly telegramService: TelegramService,
-    private readonly aiService: AiService
+    private readonly aiService: AiService,
+    private readonly commandDispatcher: CommandDispatcher
   ) {}
 
-  async checkState(
+  /**
+   * Handle a webhook response by dispatching to appropriate handlers
+   * @param dto The webhook response DTO
+   */
+  async handleWebhookResponse(
     dto: WebhookResponseDto
-  ): Promise<Customer | null> {
+  ): Promise<void> {
     try {
-      // this.logger.log(
-      //   `Отримано вебхук від Telegram: ${JSON.stringify(
-      //     dto,
-      //     null,
-      //     2
-      //   )}`
-      // );
-
-      const validatedLang = this.validateLanguage(
+      const lang = this.validateLanguage(
         dto.lang
       );
+
       const customer =
-        await this.customerService.find({
-          chatId: dto.chatId
-        });
-
-      if (!customer) {
-        await handleNewCustomer(
-          dto,
-          validatedLang,
-          this.customerService,
-          this.messageService
+        await this.customerService.findByChatId(
+          dto.chatId
         );
-      }
 
-      switch (dto.webhookType) {
-        case 'video':
-          await this.processVideoWebhook(
-            dto,
-            validatedLang,
-            customer
-          );
-          break;
-        case 'callbackQuery':
-          if (dto.text.startsWith('/')) {
-            await handleLearnWordsCommand(
-              dto,
-              validatedLang,
-              this.customerService,
-              this.messageService,
-              this.wordRepetitionJob,
-              this.wordService,
-              this.telegramService,
-              this.aiService,
-              customer
-            );
-          }
-          break;
-        case 'text':
-          if (dto.text.startsWith('/')) {
-            await handleLearnWordsCommand(
-              dto,
-              validatedLang,
-              this.customerService,
-              this.messageService,
-              this.wordRepetitionJob,
-              this.wordService,
-              this.telegramService,
-              this.aiService,
-              customer
-            );
-            break;
-          }
-        default:
-          await handleExistingCustomer(
-            dto,
-            customer,
-            validatedLang,
-            this.customerService,
-            this.messageService,
-            this.redisService,
-            this.wordService,
-            this.telegramService,
-            this.aiService
-          );
-      }
-      return customer;
-    } catch (err) {
-      this.logger.error(
-        `Помилка при обробці стану: ${err.message}`,
-        err.stack
+      // Create command context for handlers
+      const context: CommandContext = {
+        dto,
+        lang,
+        customer,
+        services: {
+          customerService: this.customerService,
+          messageService: this.messageService,
+          wordService: this.wordService,
+          telegramService: this.telegramService,
+          aiService: this.aiService,
+          wordRepetitionJob:
+            this.wordRepetitionJob
+        }
+      };
+
+      // Dispatch command to appropriate handler
+      await this.commandDispatcher.dispatchCommand(
+        context
       );
-      return null;
+    } catch (error) {
+      this.logger.error(
+        `Error handling webhook response: ${error.message}`,
+        error.stack
+      );
     }
   }
 
+  /**
+   * Validate the language code and return a supported language
+   * @param lang Language code to validate
+   * @returns A supported language code
+   */
   private validateLanguage(lang: string): string {
     if (
       !this.config.supportedLanguages.includes(
         lang
       )
     ) {
-      this.logger.warn(
-        `Непідтримувана мова: ${lang}. Використовується мова за замовчуванням: ${this.config.defaultLanguage}`
-      );
       return this.config.defaultLanguage;
     }
     return lang;

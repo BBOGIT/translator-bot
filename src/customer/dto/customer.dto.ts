@@ -5,17 +5,21 @@ import {
   IsOptional,
   IsString
 } from 'class-validator';
-import { ChannelEnum } from '../enum';
+import {
+  ChannelEnum,
+  CustomerState
+} from '../enum';
 import {
   ApiProperty,
   ApiPropertyOptional
 } from '@nestjs/swagger';
+import { Word } from '@prisma/client'; // Припускаємо, що Word з Prisma використовується для відповіді
 
 export class CustomerDto {
-  @ApiPropertyOptional()
-  @IsString()
+  @ApiPropertyOptional({ enum: CustomerState })
+  @IsEnum(CustomerState)
   @IsOptional()
-  state?: string;
+  state?: CustomerState;
 
   @ApiProperty()
   @IsString()
@@ -38,10 +42,10 @@ export class CustomerDto {
 }
 
 export class CustomerUpdateDto {
-  @ApiPropertyOptional()
-  @IsString()
+  @ApiPropertyOptional({ enum: CustomerState })
+  @IsEnum(CustomerState)
   @IsOptional()
-  state?: string;
+  state?: CustomerState;
 
   @ApiProperty()
   @IsString()
@@ -57,6 +61,11 @@ export class CustomerUpdateDto {
   @IsString()
   @IsOptional()
   lastName?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  repetitionTime?: string;
 }
 
 export class CustomerFindDto {
@@ -64,4 +73,39 @@ export class CustomerFindDto {
   @IsString()
   @IsNotEmpty()
   chatId: string;
+}
+
+export class CustomerResponseDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  chatId: string;
+
+  @ApiProperty({ enum: CustomerState })
+  state: CustomerState;
+
+  @ApiPropertyOptional()
+  firstName?: string | null;
+
+  @ApiPropertyOptional()
+  lastName?: string | null;
+
+  @ApiPropertyOptional({ enum: ChannelEnum })
+  channel?: ChannelEnum | null;
+
+  // Для масиву об'єктів Word, потрібно переконатися, що Word є типом,
+  // який Swagger може обробити, або створити WordDto
+  // Поки що припустимо, що Word з Prisma підходить, або це буде простий масив
+  @ApiPropertyOptional({
+    type: 'array',
+    items: { type: 'object' }
+  })
+  words?: Word[];
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
 }

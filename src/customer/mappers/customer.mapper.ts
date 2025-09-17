@@ -1,4 +1,7 @@
-import { Customer as PrismaCustomer } from '@prisma/client';
+import {
+  Customer as PrismaCustomer,
+  Word
+} from '@prisma/client';
 import {
   ChannelEnum,
   CustomerState
@@ -8,7 +11,7 @@ import { Customer } from '../types/customer.type';
 export class CustomerMapper {
   static toDomain(
     prismaCustomer: PrismaCustomer & {
-      Word?: any[];
+      Word?: Word[];
     }
   ): Customer {
     return {
@@ -20,6 +23,7 @@ export class CustomerMapper {
       lastName: prismaCustomer.lastName,
       channel:
         prismaCustomer.channel as ChannelEnum,
+      repetitionTime: prismaCustomer.repetitionTime,
       createdAt: prismaCustomer.createdAt,
       updatedAt: prismaCustomer.updatedAt,
       words: prismaCustomer.Word

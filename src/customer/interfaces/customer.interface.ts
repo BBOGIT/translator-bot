@@ -4,6 +4,7 @@ import {
   CustomerUpdateDto
 } from '../dto/customer.dto';
 import { CustomerState } from '../enum';
+import { Customer } from '../types/customer.type';
 
 export interface ICustomerResponse {
   id: number;
@@ -18,13 +19,9 @@ export interface ICustomerResponse {
 }
 
 export interface ICustomerRepository {
-  find(
-    chatId: string
-  ): Promise<ICustomerResponse | null>;
-  create(
-    data: CustomerDto
-  ): Promise<ICustomerResponse>;
+  find(chatId: string): Promise<Customer | null>;
+  create(data: CustomerDto): Promise<Customer>;
   update(
     data: CustomerUpdateDto
-  ): Promise<ICustomerResponse>;
+  ): Promise<Customer>;
 }

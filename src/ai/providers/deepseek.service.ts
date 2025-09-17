@@ -2,17 +2,12 @@ import {
   Injectable,
   Logger
 } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources/chat';
 import { AIConfig } from '../config/ai.config';
 import { IAIProvider } from '../interfaces/ai-provider.interface';
 import { AIResponse } from '../interfaces/ai-response.interface';
-import {
-  AIServiceError,
-  AIValidationError
-} from '../errors/ai.errors';
+import { AIProviderError } from '../../common/errors/domain-errors';
 
 @Injectable()
 export class DeepseekService
@@ -69,8 +64,13 @@ export class DeepseekService
         completion.choices[0]?.message?.content;
 
       if (!content) {
-        throw new AIValidationError(
-          'Empty response from OpenAI'
+        throw new AIProviderError(
+          'Deepseek',
+          'Empty response from Deepseek',
+          {
+            errorCode: 'DEEPSEEK_EMPTY_RESPONSE',
+            reportable: false
+          }
         );
       }
 
@@ -147,17 +147,52 @@ export class DeepseekService
             error: parseError
           }
         );
-        throw new AIValidationError(
-          'Invalid JSON response from OpenAI'
+        throw new AIProviderError(
+          'Deepseek',
+          'Invalid JSON response from Deepseek',
+          {
+            cause: parseError,
+            errorCode: 'DEEPSEEK_PARSE_ERROR',
+            reportable: true
+          }
         );
       }
     } catch (error) {
-      if (error instanceof AIValidationError) {
+      if (error instanceof AIProviderError) {
         throw error;
       }
-      throw new AIServiceError(
-        'OpenAI text processing failed',
-        error
+
+      let statusCode: number | undefined;
+      let errorCode =
+        'DEEPSEEK_TEXT_PROCESSING_FAILED';
+
+      if (error instanceof OpenAI.APIError) {
+        statusCode = error.status;
+        if (error.code) {
+          errorCode = `DEEPSEEK_API_ERROR_${error.code.toUpperCase()}`;
+        } else {
+          errorCode =
+            'DEEPSEEK_API_ERROR_UNKNOWN';
+        }
+      }
+
+      this.logger.error(
+        `Deepseek text processing error: ${error.message}`,
+        {
+          originalError: error,
+          stack: error.stack
+        }
+      );
+
+      throw new AIProviderError(
+        'Deepseek',
+        `Deepseek text processing failed: ${error.message}`,
+        {
+          cause: error,
+          statusCode,
+          errorCode,
+          reportable: true
+        }
       );
     }
   }
@@ -219,8 +254,14 @@ export class DeepseekService
         completion.choices[0]?.message?.content;
 
       if (!content) {
-        throw new AIValidationError(
-          'Invalid response format from OpenAI vision API'
+        throw new AIProviderError(
+          'Deepseek',
+          'Invalid response format from Deepseek vision API',
+          {
+            errorCode:
+              'DEEPSEEK_IMAGE_EMPTY_RESPONSE',
+            reportable: false
+          }
         );
       }
 
@@ -297,17 +338,53 @@ export class DeepseekService
             error: parseError
           }
         );
-        throw new AIValidationError(
-          'Invalid JSON response from OpenAI'
+        throw new AIProviderError(
+          'Deepseek',
+          'Invalid JSON response from Deepseek vision API',
+          {
+            cause: parseError,
+            errorCode:
+              'DEEPSEEK_IMAGE_PARSE_ERROR',
+            reportable: true
+          }
         );
       }
     } catch (error) {
-      if (error instanceof AIValidationError) {
+      if (error instanceof AIProviderError) {
         throw error;
       }
-      throw new AIServiceError(
-        'OpenAI image processing failed',
-        error
+
+      let statusCode: number | undefined;
+      let errorCode =
+        'DEEPSEEK_IMAGE_PROCESSING_FAILED';
+
+      if (error instanceof OpenAI.APIError) {
+        statusCode = error.status;
+        if (error.code) {
+          errorCode = `DEEPSEEK_API_ERROR_${error.code.toUpperCase()}`;
+        } else {
+          errorCode =
+            'DEEPSEEK_API_ERROR_UNKNOWN';
+        }
+      }
+
+      this.logger.error(
+        `Deepseek image processing error: ${error.message}`,
+        {
+          originalError: error,
+          stack: error.stack
+        }
+      );
+
+      throw new AIProviderError(
+        'Deepseek',
+        `Deepseek image processing failed: ${error.message}`,
+        {
+          cause: error,
+          statusCode,
+          errorCode,
+          reportable: true
+        }
       );
     }
   }
@@ -319,16 +396,28 @@ export class DeepseekService
       !response.translation ||
       !response.examples
     ) {
-      throw new AIValidationError(
-        'Invalid response format: missing required fields'
+      throw new AIProviderError(
+        'Deepseek',
+        'Invalid response format: missing required fields',
+        {
+          errorCode:
+            'DEEPSEEK_INVALID_RESPONSE_FORMAT',
+          reportable: true
+        }
       );
     }
 
     if (
       typeof response.translation !== 'string'
     ) {
-      throw new AIValidationError(
-        'Invalid response format: translation must be a string'
+      throw new AIProviderError(
+        'Deepseek',
+        'Invalid response format: translation must be a string',
+        {
+          errorCode:
+            'DEEPSEEK_INVALID_RESPONSE_FORMAT',
+          reportable: true
+        }
       );
     }
 
@@ -336,8 +425,14 @@ export class DeepseekService
       !Array.isArray(response.examples) &&
       typeof response.examples !== 'string'
     ) {
-      throw new AIValidationError(
-        'Invalid response format: examples must be an array or string'
+      throw new AIProviderError(
+        'Deepseek',
+        'Invalid response format: examples must be an array or string',
+        {
+          errorCode:
+            'DEEPSEEK_INVALID_RESPONSE_FORMAT',
+          reportable: true
+        }
       );
     }
   }

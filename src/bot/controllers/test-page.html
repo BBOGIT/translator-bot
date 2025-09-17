@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bot Handler Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      overflow: auto;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bot Handler Test Page</h1>
+  
+  <div class="container">
+    <div class="card">
+      <h2>Create Test Customer</h2>
+      <button id="createCustomer">Create Test Customer</button>
+      <div id="customerResult"></div>
+    </div>
+    
+    <div class="card">
+      <h2>Test Commands</h2>
+      <div>
+        <select id="commandSelector">
+          <option value="/start">Start (/start)</option>
+          <option value="/mainMenu">Main Menu (/mainMenu)</option>
+          <option value="/learnWords">Learn Words (/learnWords)</option>
+          <option value="/repeatWords">Repeat Words (/repeatWords)</option>
+          <option value="/myProgress">My Progress (/myProgress)</option>
+          <option value="custom">Custom Message</option>
+        </select>
+        <input type="text" id="customCommand" placeholder="Enter custom message" style="display: none;" />
+        <button id="testCommand">Test Command</button>
+      </div>
+      <div id="commandResult"></div>
+    </div>
+    
+    <div class="card">
+      <h2>Response Preview</h2>
+      <pre id="responsePreview"></pre>
+    </div>
+  </div>
+
+  <script>
+    const BASE_URL = window.location.hostname === 'localhost' ? 
+      `http://${window.location.hostname}:1889` : 
+      window.location.origin;
+    
+    document.getElementById('commandSelector').addEventListener('change', function() {
+      const customInput = document.getElementById('customCommand');
+      if (this.value === 'custom') {
+        customInput.style.display = 'inline-block';
+      } else {
+        customInput.style.display = 'none';
+      }
+    });
+    
+    document.getElementById('createCustomer').addEventListener('click', async function() {
+      const resultDiv = document.getElementById('customerResult');
+      resultDiv.innerHTML = 'Creating test customer...';
+      
+      try {
+        const response = await fetch(`${BASE_URL}/api/bot-test/customer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        resultDiv.innerHTML = `
+          <pre class="${data.success ? 'success' : 'error'}">${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <pre class="error">Error: ${error.message}</pre>
+        `;
+      }
+    });
+    
+    document.getElementById('testCommand').addEventListener('click', async function() {
+      const commandSelector = document.getElementById('commandSelector');
+      const customCommand = document.getElementById('customCommand');
+      const resultDiv = document.getElementById('commandResult');
+      const responsePreview = document.getElementById('responsePreview');
+      
+      let commandText = commandSelector.value;
+      if (commandText === 'custom') {
+        commandText = customCommand.value;
+      }
+      
+      resultDiv.innerHTML = `Testing command: ${commandText}...`;
+      
+      try {
+        // First get the template for the command
+        const templateResponse = await fetch(`${BASE_URL}/api/bot-test/template/${commandText}`);
+        const webhookTemplate = await templateResponse.json();
+        
+        // Display the webhook template
+        responsePreview.textContent = JSON.stringify(webhookTemplate, null, 2);
+        
+        // Send the webhook
+        const response = await fetch(`${BASE_URL}/api/bot-test/webhook`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(webhookTemplate)
+        });
+        
+        const data = await response.json();
+        resultDiv.innerHTML = `
+          <pre class="${data.success ? 'success' : 'error'}">${JSON.stringify(data, null, 2)}</pre>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <pre class="error">Error: ${error.message}</pre>
+        `;
+      }
+    });
+  </script>
+</body>
+</html> 

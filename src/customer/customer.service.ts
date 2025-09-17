@@ -30,6 +30,12 @@ export class CustomerService {
     );
   }
 
+  async findByChatId(
+    chatId: string
+  ): Promise<Customer | null> {
+    return await this.find({ chatId });
+  }
+
   async create(
     dto: CustomerDto
   ): Promise<Customer> {

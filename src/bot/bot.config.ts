@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+/**
+ * Typed configuration for the Bot module.
+ * Loads and validates bot-specific settings from the environment/ConfigService.
+ */
 @Injectable()
 export class BotConfig {
   // Базові налаштування бота
@@ -117,7 +121,10 @@ export class BotConfig {
     this.validate();
   }
 
-  // Метод для комплексної валідації конфігурації
+  /**
+   * Validates the loaded configuration.
+   * Throws an error if critical configuration is missing or inconsistent.
+   */
   validate(): void {
     // Перевіряємо налаштування мови
     if (
@@ -154,33 +161,50 @@ export class BotConfig {
     }
   }
 
-  // Метод для отримання конфігурації поточного AI провайдера
+  /**
+   * Gets the configuration for the currently selected AI provider.
+   * @returns The API URL, API key, and other relevant settings for the current AI provider.
+   */
   getCurrentAIConfig() {
     return this.aiConfig.provider === 'deepseek'
       ? this.deepseekConfig
       : this.openAIConfig;
   }
 
-  // Метод для перевірки типу зображення
+  /**
+   * Checks if the given MIME type for an image is allowed.
+   * @param mimeType The MIME type to check.
+   * @returns True if allowed, false otherwise.
+   */
   isAllowedImageType(mimeType: string): boolean {
     return this.imageConfig.allowedMimeTypes.includes(
       mimeType
     );
   }
 
-  // Метод для перевірки розміру зображення
+  /**
+   * Checks if the given image size in bytes is allowed.
+   * @param sizeBytes The size of the image in bytes.
+   * @returns True if allowed, false otherwise.
+   */
   isAllowedImageSize(sizeBytes: number): boolean {
     return (
       sizeBytes <= this.imageConfig.maxSizeBytes
     );
   }
 
-  // Метод для отримання налаштувань обробки зображень
+  /**
+   * Gets the image processing configuration.
+   * @returns The image configuration object.
+   */
   getImageConfig() {
     return this.imageConfig;
   }
 
-  // Метод для отримання конфігурації повторних спроб
+  /**
+   * Gets the general retry configuration for AI services.
+   * @returns An object with maxRetries and retryDelay.
+   */
   getRetryConfig() {
     return {
       maxRetries: this.aiConfig.maxRetries,

@@ -1,22 +1,81 @@
 import {
   Body,
   Controller,
-  Post
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+  Req
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import {
+  AuthService,
+  Tokens
+} from './auth.service';
 import { AuthDto } from './dto';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Request } from 'express';
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    sub?: number;
+    email?: string;
+    refreshToken?: string;
+    userId?: number;
+  };
+}
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Post('signup')
+  @HttpCode(HttpStatus.CREATED)
+  async signup(
+    @Body() args: AuthDto
+  ): Promise<Tokens> {
+    return this.authService.signup(args);
+  }
+
   @Post('signin')
-  signin(@Body() args: AuthDto) {
+  @HttpCode(HttpStatus.OK)
+  async signin(
+    @Body() args: AuthDto
+  ): Promise<Tokens> {
     return this.authService.signin(args);
   }
 
-  @Post('signup')
-  signup(@Body() args: AuthDto) {
-    return this.authService.signup(args);
+  @Post('refresh')
+  @UseGuards(RefreshTokenGuard)
+  @HttpCode(HttpStatus.OK)
+  async refreshTokens(
+    @Req() req: AuthenticatedRequest
+  ): Promise<Tokens> {
+    const userId = req.user?.sub;
+    const refreshToken = req.user?.refreshToken;
+    if (!userId || !refreshToken) {
+      throw new Error(
+        'User ID or refresh token missing from request'
+      );
+    }
+    return this.authService.refreshTokens(
+      userId,
+      refreshToken
+    );
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async logout(
+    @Req() req: AuthenticatedRequest
+  ): Promise<void> {
+    const userId = req.user?.userId;
+    if (!userId) {
+      throw new Error(
+        'User ID missing from request'
+      );
+    }
+    return this.authService.logout(userId);
   }
 }

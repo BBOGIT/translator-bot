@@ -11,6 +11,7 @@ export type Customer = {
   firstName: string | null;
   lastName: string | null;
   channel: ChannelEnum | null;
+  repetitionTime: string | null;
   createdAt: Date;
   updatedAt: Date;
   words?: Word[];

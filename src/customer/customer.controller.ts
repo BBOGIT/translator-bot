@@ -5,7 +5,8 @@ import {
   Put,
   Body,
   Param,
-  HttpStatus
+  HttpStatus,
+  UseGuards
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,16 +17,38 @@ import { CustomerService } from './customer.service';
 import {
   CustomerDto,
   CustomerUpdateDto,
-  CustomerFindDto
+  CustomerFindDto,
+  CustomerResponseDto
 } from './dto';
-import { ICustomerResponse } from './interfaces/customer.interface';
+import { Customer } from './types/customer.type';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Customers')
 @Controller('customers')
+@UseGuards(JwtAuthGuard)
 export class CustomerController {
   constructor(
     private readonly customerService: CustomerService
   ) {}
+
+  private mapToResponseDto(
+    customer: Customer
+  ): CustomerResponseDto {
+    if (!customer) {
+      return null;
+    }
+    return {
+      id: customer.id,
+      chatId: customer.chatId,
+      state: customer.state,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      channel: customer.channel,
+      words: customer.words,
+      createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt
+    };
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create customer' })
@@ -33,7 +56,7 @@ export class CustomerController {
     status: HttpStatus.CREATED,
     description:
       'Customer has been successfully created.',
-    type: CustomerDto
+    type: CustomerResponseDto
   })
   @ApiResponse({
     status: HttpStatus.CONFLICT,
@@ -42,8 +65,10 @@ export class CustomerController {
   })
   async create(
     @Body() dto: CustomerDto
-  ): Promise<ICustomerResponse> {
-    return await this.customerService.create(dto);
+  ): Promise<CustomerResponseDto> {
+    const customer =
+      await this.customerService.create(dto);
+    return this.mapToResponseDto(customer);
   }
 
   @Get(':chatId')
@@ -53,7 +78,7 @@ export class CustomerController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Customer found.',
-    type: CustomerDto
+    type: CustomerResponseDto
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -61,8 +86,10 @@ export class CustomerController {
   })
   async find(
     @Param() dto: CustomerFindDto
-  ): Promise<ICustomerResponse> {
-    return await this.customerService.find(dto);
+  ): Promise<CustomerResponseDto> {
+    const customer =
+      await this.customerService.find(dto);
+    return this.mapToResponseDto(customer);
   }
 
   @Put(':chatId')
@@ -71,7 +98,7 @@ export class CustomerController {
     status: HttpStatus.OK,
     description:
       'Customer has been successfully updated.',
-    type: CustomerDto
+    type: CustomerResponseDto
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -80,10 +107,12 @@ export class CustomerController {
   async update(
     @Param('chatId') chatId: string,
     @Body() dto: CustomerUpdateDto
-  ): Promise<ICustomerResponse> {
-    return await this.customerService.update({
-      ...dto,
-      chatId
-    });
+  ): Promise<CustomerResponseDto> {
+    const customer =
+      await this.customerService.update({
+        ...dto,
+        chatId
+      });
+    return this.mapToResponseDto(customer);
   }
 }

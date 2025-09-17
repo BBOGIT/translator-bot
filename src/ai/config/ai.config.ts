@@ -12,6 +12,7 @@ export interface OpenAIConfig {
   model: string;
   imageModel: string;
   maxTokens: number;
+  imageMaxTokens?: number;
   temperature: number;
 }
 
@@ -59,6 +60,15 @@ export class AIConfig {
       : AIProvider.DEEPSEEK;
   }
 
+  get cacheTTL(): number {
+    return (
+      this.configService.get<number>(
+        'AI_CACHE_TTL_SECONDS',
+        30 * 24 * 60 * 60 // 30 днів в секундах
+      ) * 1000 // Перетворюємо в мілісекунди
+    );
+  }
+
   get openAIConfig(): OpenAIConfig {
     return {
       apiUrl: this.getRequiredConfig(
@@ -79,6 +89,11 @@ export class AIConfig {
         'OPENAI_MAX_TOKENS',
         500
       ),
+      imageMaxTokens:
+        this.configService.get<number>(
+          'OPENAI_IMAGE_MAX_TOKENS',
+          2000
+        ),
       temperature: this.configService.get<number>(
         'OPENAI_TEMPERATURE',
         0.7

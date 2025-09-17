@@ -1,0 +1,29 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    version: 1
+
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    database: "logstash-*"
+    isDefault: false
+    editable: false
+    version: 1
+    basicAuth: false
+    jsonData:
+      esVersion: 7
+      timeField: "@timestamp"
+      interval: Daily
+      logMessageField: message
+      logLevelField: level
+      dataLinks:
+        - field: container_name
+          url: "http://localhost:5601/app/discover#/?_g=(time:(from:now-1h,to:now))&_a=(filters:!((meta:(alias:!n,disabled:!f,index:'logstash-*',key:container_name,negate:!f),query:'$${__value.raw}'))" 

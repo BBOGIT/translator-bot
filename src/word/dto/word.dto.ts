@@ -73,3 +73,120 @@ export class UpdateWordRepetitionDto {
   @IsBoolean()
   success: boolean;
 }
+
+// Додаємо WordResponseDto для відповідей API
+import {
+  ApiProperty,
+  ApiPropertyOptional
+} from '@nestjs/swagger';
+
+export class WordResponseDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  word: string;
+
+  @ApiProperty()
+  translation: string;
+
+  @ApiPropertyOptional({ type: [String] }) // Припускаємо, що examples - це масив рядків
+  examples?: string[];
+
+  @ApiProperty()
+  needToLearn: boolean;
+
+  @ApiProperty({
+    description:
+      'Number of times the word has been repeated'
+  })
+  repeatCount: number;
+
+  @ApiPropertyOptional({
+    description: 'Date of the last repetition'
+  })
+  lastRepeatAt?: Date | null;
+
+  @ApiPropertyOptional({
+    description:
+      'Date of the next scheduled repetition'
+  })
+  nextRepeatDate?: Date | null;
+
+  @ApiPropertyOptional()
+  @IsUrl()
+  imageExample?: string | null;
+
+  @ApiPropertyOptional()
+  @IsUrl()
+  videoExample?: string | null;
+
+  @ApiProperty()
+  customerId: number;
+
+  @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty()
+  updatedAt: Date;
+}
+
+export class PaginatedWordsResponseDto {
+  @ApiProperty({ type: [WordResponseDto] })
+  words: WordResponseDto[];
+
+  @ApiProperty()
+  total: number;
+
+  @ApiProperty({
+    description: 'Total number of pages'
+  })
+  pages: number;
+}
+
+// DTO для оновлення слова
+export class UpdateWordDto {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  word?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  translation?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  examples?: string[];
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  needToLearn?: boolean;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  repeatCount?: number;
+
+  @ApiPropertyOptional()
+  @IsDate()
+  @IsOptional()
+  lastRepeatAt?: Date | null;
+
+  @ApiPropertyOptional()
+  @IsDate()
+  @IsOptional()
+  nextRepeatDate?: Date | null;
+
+  @ApiPropertyOptional()
+  @IsUrl()
+  @IsOptional()
+  imageExample?: string | null;
+
+  @ApiPropertyOptional()
+  @IsUrl()
+  @IsOptional()
+  videoExample?: string | null;
+}

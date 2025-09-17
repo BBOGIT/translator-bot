@@ -134,7 +134,130 @@
     "textProcessingErrorText": {
         "uk": "Помилка отримання перекладу"
     },
+    "startRepetitionText": {
+        "uk": "Починаємо повторення слів! У вас є {{wordsCount}} слів для повторення."
+    },
+    "repetitionErrorText": {
+        "uk": "Сталася помилка під час повторення слів. Спробуйте пізніше."
+    },
     "chatId": {
         "uk": ""
+    },
+    "progressText": {
+        "uk": "📊 *Ваш прогрес навчання*\n\n{{progressDetails}}"
+    },
+    "repeatNowButton": {
+        "uk": "🔄 Повторити зараз"
+    },
+    "repeatNowButtonWithCount": {
+        "uk": "🔄 Повторити зараз ({{count}})"
+    },
+    "addNewWordsButton": {
+        "uk": "➕ Додати нові слова"
+    },
+    "viewLearnedWordsButton": {
+        "uk": "📚 Переглянути вивчені слова"
+    },
+    "generalStatsTitle": {
+        "uk": "📈 *Загальна статистика:*"
+    },
+    "activityStatsTitle": {
+        "uk": "⚡ *Активність:*"
+    },
+    "repetitionStatsTitle": {
+        "uk": "🔄 *Статистика повторень:*"
+    },
+    "timeStatsTitle": {
+        "uk": "⏰ *Часові показники:*"
+    },
+    "totalWordsLabel": {
+        "uk": "Всього слів"
+    },
+    "learnedWordsLabel": {
+        "uk": "Вивчених слів"
+    },
+    "wordsInProgressLabel": {
+        "uk": "У процесі вивчення"
+    },
+    "wordsReadyForRepetitionLabel": {
+        "uk": "Готові для повторення"
+    },
+    "dailyActivityLabel": {
+        "uk": "Активність за день"
+    },
+    "weeklyActivityLabel": {
+        "uk": "Активність за тиждень"
+    },
+    "monthlyActivityLabel": {
+        "uk": "Активність за місяць"
+    },
+    "learningStreakLabel": {
+        "uk": "Серія навчання"
+    },
+    "daysLearningLabel": {
+        "uk": "Днів навчання"
+    },
+    "lastActivityLabel": {
+        "uk": "Остання активність"
+    },
+    "joinedDateLabel": {
+        "uk": "Дата приєднання"
+    },
+    "daysAgo": {
+        "uk": "{{count}} днів тому"
+    },
+    "today": {
+        "uk": "сьогодні"
+    },
+    "yesterday": {
+        "uk": "вчора"
+    },
+    "neverActive": {
+        "uk": "немає активності"
+    },
+    "askForRepetitionTimeText": {
+        "uk": "⏰ *Налаштування часу нагадувань*\n\nОберіть зручний час для отримання нагадувань про повторення слів або введіть власний час у форматі HH:MM (наприклад: 19:30)\n\n💡 *Поточний час:* {{currentTime}}"
+    },
+    "time7Button": {
+        "uk": "🌅 07:00 (ранок)"
+    },
+    "time9Button": {
+        "uk": "☀️ 09:00 (ранок)"
+    },
+    "time19Button": {
+        "uk": "🌆 19:00 (вечір)"
+    },
+    "time21Button": {
+        "uk": "🌙 21:00 (вечір)"
+    },
+    "customTimeButton": {
+        "uk": "✏️ Ввести свій час"
+    },
+    "repetitionTimeConfirmedText": {
+        "uk": "✅ *Час нагадувань встановлено!*\n\nВи будете отримувати нагадування о *{{time}}*\n\nЩоб змінити час, перейдіть до розділу \"Повторити слова\" → \"Вказати коли нагадати\""
+    },
+    "repetitionTimeErrorText": {
+        "uk": "❌ *Неправильний формат часу*\n\nВведіть час у форматі *HH:MM* (наприклад: 19:30)\n\nЧас повинен бути від 00:00 до 23:59"
+    },
+    "repetitionPromptText": {
+        "uk": "🔔 *Час повторення слів!*\n\nУ вас є *{{count}}* {{wordForm}} для повторення\n\nГотові почати? 📚"
+    },
+    "remindLaterButton": {
+        "uk": "⏰ Нагадати пізніше"
+    },
+    "customTimePromptText": {
+        "uk": "✏️ *Введіть час нагадувань*\n\nВведіть час у форматі *HH:MM*\nНаприклад: 19:30\n\n⏰ Час вказується в 24-годинному форматі від 00:00 до 23:59"
+    },
+    "viewSettingsButton": {
+        "uk": "⚙️ Налаштування"
+    },
+    "viewSettingsText": {
+        "uk": "⚙️ *Поточні налаштування*\n\n⏰ Час нагадувань: *{{currentRepetitionTime}}*\n\n{{settingsDetails}}"
+    },
+    "changeTimeButton": {
+        "uk": "🕐 Змінити час"
+    },
+    "noTimeSetText": {
+        "uk": "За замовчуванням (20:00)"
     }
 }

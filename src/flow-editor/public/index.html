@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot Flow Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.8/antd.min.css" integrity="sha512-neP73M4cJdvItMVR1LLsiEZrYMcxVYDEph5Xj1J9zQ9XFUm/LUrDQQA6k7x3NlBE2n59JMUjksEXDt+PkTBRA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="components/FlowEditor.css" />
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #f50057;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --bg-color: #f9fbfd;
+            --card-bg: #ffffff;
+            --border-color: #e0e0e0;
+            --text-color: #333333;
+            --text-secondary: #757575;
+            --header-height: 64px;
+            --sidebar-width: 250px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            --border-radius: 8px;
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        #root {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .app-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0 24px;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .app-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-button {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin-left: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .header-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .header-button i {
+            margin-right: 6px;
+        }
+        
+        .main-content {
+            margin-top: var(--header-height);
+            padding: 24px;
+            height: calc(100% - var(--header-height));
+            overflow-y: auto;
+        }
+        
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            min-height: calc(100% - 48px);
+        }
+        
+        .status-bar {
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-bar.success {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #2e7d32;
+        }
+        
+        .status-bar.error {
+            background-color: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #c62828;
+        }
+        
+        .status-bar i {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .tab:hover {
+            color: var(--primary-color);
+            background-color: rgba(63, 81, 181, 0.05);
+        }
+        
+        .tab.active {
+            color: var(--primary-color);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+        
+        .tab-content {
+            margin-top: 16px;
+            position: relative;
+        }
+        
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            flex-direction: column;
+        }
+        
+        .loading-spinner {
+            color: var(--primary-color);
+        }
+        
+        .loading-text {
+            margin-top: 16px;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+        
+        .error-container {
+            padding: 24px;
+            background-color: rgba(244, 67, 54, 0.05);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--error-color);
+        }
+        
+        .error-container h3 {
+            color: var(--error-color);
+            margin-top: 0;
+        }
+        
+        /* Log Window Styles */
+        .log-window {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 500px;
+            height: 300px;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: #eee;
+            border-top-left-radius: var(--border-radius);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -2px -2px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            font-family: monospace;
+        }
+        
+        .log-window.collapsed {
+            transform: translateY(calc(100% - 40px));
+        }
+        
+        .log-header {
+            padding: 8px 12px;
+            background-color: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: var(--border-radius);
+            cursor: pointer;
+        }
+        
+        .log-header h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        
+        .log-controls {
+            display: flex;
+        }
+        
+        .log-control-button {
+            background: transparent;
+            border: none;
+            color: #aaa;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .log-control-button:hover {
+            color: white;
+        }
+        
+        .log-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .log-entry {
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 4px;
+        }
+        
+        .log-entry.info {
+            color: #8bc34a;
+        }
+        
+        .log-entry.error {
+            color: #f44336;
+        }
+        
+        .log-entry.warning {
+            color: #ff9800;
+        }
+        
+        .log-entry-time {
+            color: #aaa;
+            margin-right: 8px;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 16px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                padding: 8px 16px;
+            }
+            
+            .log-window {
+                width: 100%;
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <header class="app-header">
+            <div class="container-fluid d-flex justify-content-between align-items-center">
+                <h1>Telegram Bot Flow Editor</h1>
+                <div>
+                    <button id="show-logs-btn" class="header-button">
+                        <i class="fas fa-terminal"></i> Logs
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="app-container">
+                <div id="flow-editor-container">
+                    <div class="loading-container">
+                        <div class="loading-spinner">
+                            <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+                        </div>
+                        <div class="loading-text">Loading editor...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log Window Component -->
+        <div id="log-window" class="log-window collapsed">
+            <div id="log-header" class="log-header">
+                <h3>Console Logs</h3>
+                <div class="log-controls">
+                    <button id="clear-logs-btn" class="log-control-button" title="Clear logs">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button id="toggle-logs-btn" class="log-control-button" title="Toggle logs">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                    <button id="close-logs-btn" class="log-control-button" title="Close logs">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="log-content" class="log-content"></div>
+        </div>
+    </div>
+
+    <!-- React and ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Ant Design -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.8/antd.min.js" integrity="sha512-eZlnWrAhQGpZLkBnxTczkHcRw+LXJWb0gYRz3vmQdKgYUZUY6B5O/4rZt16wXsU/j4ehrdZZwhBqMOvRdYJQNw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- CodeMirror -->
+    <script src="https://unpkg.com/@codemirror/state@6.2.1/dist/index.js"></script>
+    <script src="https://unpkg.com/@codemirror/view@6.13.0/dist/index.js"></script>
+    <script src="https://unpkg.com/@codemirror/language@6.8.0/dist/index.js"></script>
+    <script src="https://unpkg.com/@codemirror/commands@6.2.4/dist/index.js"></script>
+    <script src="https://unpkg.com/@codemirror/lang-javascript@6.1.9/dist/index.js"></script>
+    <script src="https://unpkg.com/@codemirror/lang-json@6.0.1/dist/index.js"></script>
+    <script src="https://unpkg.com/@uiw/codemirror-theme-dracula@4.21.8/dist/index.js"></script>
+    <script src="https://unpkg.com/@uiw/react-codemirror@4.21.8/dist/index.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Flow Editor Component -->
+    <script src="components/FlowEditor.js" type="text/babel"></script>
+    <script src="components/TemplateEditor.js" type="text/babel"></script>
+    <script src="components/AttributeEditor.js" type="text/babel"></script>
+    
+    <!-- Log Window Functionality -->
+    <script>
+        // Set up console overrides for log window
+        (function() {
+            const originalConsoleLog = console.log;
+            const originalConsoleError = console.error;
+            const originalConsoleWarn = console.warn;
+            const logContent = document.getElementById('log-content');
+            
+            function addLogEntry(type, args) {
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                
+                const time = document.createElement('span');
+                time.className = 'log-entry-time';
+                time.textContent = new Date().toLocaleTimeString();
+                entry.appendChild(time);
+                
+                const message = document.createElement('span');
+                message.textContent = Array.from(args).map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+                ).join(' ');
+                entry.appendChild(message);
+                
+                logContent.appendChild(entry);
+                logContent.scrollTop = logContent.scrollHeight;
+            }
+            
+            // Override console methods
+            console.log = function() {
+                addLogEntry('info', arguments);
+                originalConsoleLog.apply(console, arguments);
+            };
+            
+            console.error = function() {
+                addLogEntry('error', arguments);
+                originalConsoleError.apply(console, arguments);
+            };
+            
+            console.warn = function() {
+                addLogEntry('warning', arguments);
+                originalConsoleWarn.apply(console, arguments);
+            };
+            
+            // Log window controls
+            document.getElementById('log-header').addEventListener('click', function(e) {
+                if (!e.target.closest('.log-control-button')) {
+                    document.getElementById('log-window').classList.toggle('collapsed');
+                    const icon = document.querySelector('#toggle-logs-btn i');
+                    if (icon.classList.contains('fa-chevron-up')) {
+                        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                    } else {
+                        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                    }
+                }
+            });
+            
+            document.getElementById('toggle-logs-btn').addEventListener('click', function() {
+                document.getElementById('log-window').classList.toggle('collapsed');
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('fa-chevron-up')) {
+                    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                } else {
+                    icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                }
+            });
+            
+            document.getElementById('clear-logs-btn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                logContent.innerHTML = '';
+            });
+            
+            document.getElementById('close-logs-btn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('log-window').style.display = 'none';
+            });
+            
+            document.getElementById('show-logs-btn').addEventListener('click', function() {
+                const logWindow = document.getElementById('log-window');
+                logWindow.style.display = 'flex';
+                logWindow.classList.remove('collapsed');
+                document.querySelector('#toggle-logs-btn i').classList.replace('fa-chevron-down', 'fa-chevron-up');
+            });
+        })();
+    </script>
+    
+    <!-- Initialize React App -->
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        const App = () => {
+            // Set the API base URL dynamically based on the current hostname
+            const hostname = window.location.hostname;
+            const port = 1889; // Hardcoded port as per server configuration
+            window.API_BASE_URL = `http://${hostname}:${port}/api/flow-editor`;
+            
+            console.log('API base URL set to:', window.API_BASE_URL);
+            
+            // Add state for API status and active tab
+            const [apiStatus, setApiStatus] = useState({ loading: true });
+            const [activeTab, setActiveTab] = useState('templates');
+            
+            // Test API connection on component load
+            useEffect(() => {
+              const testApiConnection = async () => {
+                try {
+                  console.log('Testing API connection...');
+                  const response = await fetch(`${window.API_BASE_URL}`);
+                  
+                  if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                  }
+                  
+                  const data = await response.json();
+                  console.log('API connection successful, received data:', data);
+                  setApiStatus({ 
+                    loading: false,
+                    connected: true, 
+                    message: data.message || 'Connection successful'
+                  });
+                } catch (error) {
+                  console.error('API connection failed:', error);
+                  setApiStatus({ 
+                    loading: false,
+                    connected: false, 
+                    error: error.message 
+                  });
+                }
+              };
+              
+              testApiConnection();
+            }, []);
+            
+            // Handle tab changes
+            const handleTabChange = (tab) => {
+              setActiveTab(tab);
+            };
+            
+            // Render the FlowEditor component
+            return (
+              <div className="app-container">
+                {apiStatus.loading ? (
+                  <div className="loading-container">
+                    <div className="loading-spinner">
+                      <i className="fas fa-circle-notch fa-spin fa-3x"></i>
+                    </div>
+                    <div className="loading-text">Connecting to API...</div>
+                  </div>
+                ) : apiStatus.connected ? (
+                  <>
+                    <div className="status-bar success">
+                      <i className="fas fa-check-circle"></i>
+                      <span>{apiStatus.message}</span>
+                    </div>
+                    
+                    <div className="tabs">
+                      <div 
+                        className={`tab ${activeTab === 'templates' ? 'active' : ''}`} 
+                        onClick={() => handleTabChange('templates')}
+                      >
+                        <i className="fas fa-file-alt"></i> Templates
+                      </div>
+                      <div 
+                        className={`tab ${activeTab === 'attributes' ? 'active' : ''}`} 
+                        onClick={() => handleTabChange('attributes')}
+                      >
+                        <i className="fas fa-tags"></i> Attributes
+                      </div>
+                    </div>
+                    
+                    <div className="tab-content">
+                      {activeTab === 'templates' && <TemplateEditor />}
+                      {activeTab === 'attributes' && <AttributeEditor />}
+                    </div>
+                  </>
+                ) : (
+                  <div className="error-container">
+                    <h3><i className="fas fa-exclamation-triangle"></i> API Connection Error</h3>
+                    <p>{apiStatus.error}</p>
+                    <p>Please ensure the server is running and accessible at {window.API_BASE_URL}</p>
+                    <button 
+                      className="header-button" 
+                      style={{ 
+                        background: 'var(--primary-color)',
+                        color: 'white',
+                        marginTop: '12px'
+                      }}
+                      onClick={() => window.location.reload()}
+                    >
+                      <i className="fas fa-sync"></i> Retry Connection
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+        };
+        
+        ReactDOM.createRoot(document.getElementById('flow-editor-container')).render(<App />);
+    </script>
+</body>
+</html> 
