@@ -6,6 +6,8 @@ import { AIConfig } from './config/ai.config';
 import { OpenAIService } from './providers/openai.service';
 import { DeepseekService } from './providers/deepseek.service';
 import { MetricsModule } from '../common/metrics/metrics.module';
+import { AICacheService } from './services/ai-cache.service';
+import { CacheModule } from '../cache/cache.module';
 
 @Module({
   imports: [
@@ -14,14 +16,16 @@ import { MetricsModule } from '../common/metrics/metrics.module';
       maxRedirects: 5
     }),
     ConfigModule,
-    MetricsModule
+    MetricsModule,
+    CacheModule
   ],
   providers: [
     AIConfig,
     AiService,
     OpenAIService,
-    DeepseekService
+    DeepseekService,
+    AICacheService
   ],
-  exports: [AiService]
+  exports: [AiService, AICacheService]
 })
 export class AiModule {}

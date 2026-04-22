@@ -611,9 +611,10 @@ describe('Bot Commands Integration Tests', () => {
     ).toBe(true);
 
     // 4. Перевіряємо, що після створення слова, користувач повернувся в головне меню
-    customer = await customerService.findByChatId(
-      TEST_CHAT_ID
-    );
+    customer =
+      await customerService.findByChatId(
+        TEST_CHAT_ID
+      );
     expect(customer.state).toBe(
       CustomerState.MainMenu
     );

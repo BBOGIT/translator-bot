@@ -14,6 +14,7 @@ import {
   ChannelEnum
 } from './enum';
 import { BotService } from '../bot/bot.service';
+import { ChannelInfo } from './interfaces/channel-info.interface';
 
 type WebhookSource =
   | MessageDto
@@ -78,6 +79,15 @@ export class WebhookService {
       messageId = String(source.message_id);
     }
 
+    const isForwardedFromChannel =
+      this.isForwardedFromChannel(dto);
+    const channelInfo =
+      this.extractChannelInfo(dto);
+
+    this.logger.log(
+      `Forwarded message check: ${isForwardedFromChannel}, channelInfo: ${JSON.stringify(channelInfo)}`
+    );
+
     return {
       chatId: String(from.id),
       lang: from.language_code,
@@ -87,7 +97,9 @@ export class WebhookService {
       lastName: from.last_name ?? null,
       channel: ChannelEnum.telegram,
       messageId,
-      originalWebhook: dto
+      originalWebhook: dto,
+      isForwardedFromChannel,
+      channelInfo
     };
   }
 
@@ -220,5 +232,71 @@ export class WebhookService {
 
     const extractor = extractors[type];
     return extractor ? extractor() : null;
+  }
+
+  /**
+   * Проверяет, является ли сообщение пересланным из канала
+   */
+  private isForwardedFromChannel(
+    dto: TelegramWebhookBodyDto
+  ): boolean {
+    const message = dto.message;
+    if (!message) return false;
+
+    // Новый формат forward_origin
+    if (
+      message.forward_origin?.type === 'channel'
+    ) {
+      return true;
+    }
+
+    // Старый формат forward_from_chat
+    if (
+      message.forward_from_chat?.type ===
+      'channel'
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Извлекает информацию о канале из пересланного сообщения
+   */
+  private extractChannelInfo(
+    dto: TelegramWebhookBodyDto
+  ): ChannelInfo | null {
+    const message = dto.message;
+    if (!message) return null;
+
+    // Новый формат forward_origin
+    if (
+      message.forward_origin?.type === 'channel'
+    ) {
+      const chat = message.forward_origin.chat;
+      return {
+        id: String(chat?.id),
+        title: chat?.title,
+        username: chat?.username,
+        type: 'channel' as const
+      };
+    }
+
+    // Старый формат forward_from_chat
+    if (
+      message.forward_from_chat?.type ===
+      'channel'
+    ) {
+      return {
+        id: String(message.forward_from_chat.id),
+        title: message.forward_from_chat.title,
+        username:
+          message.forward_from_chat.username,
+        type: 'channel' as const
+      };
+    }
+
+    return null;
   }
 }

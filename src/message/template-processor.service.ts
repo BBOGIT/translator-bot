@@ -408,7 +408,15 @@ export class TemplateProcessorService {
     fieldsToIgnore: string[] = [
       'callback_data',
       'data',
-      'url'
+      'url',
+      'video',
+      'photo',
+      'document',
+      'audio',
+      'animation',
+      'sticker',
+      'voice',
+      'file_id'
     ]
   ): string {
     if (!jsonString) return jsonString;

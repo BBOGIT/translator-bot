@@ -86,3 +86,24 @@ model WordRepetition {
   @@index([createdAt])
   @@map("word_repetitions")
 }
+
+model ChannelExtractionConfig {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  channelId          String  @unique
+  channelTitle       String?
+  channelUsername    String?
+  
+  wordRegex          String
+  translationRegex   String
+  examplesRegex      String
+  
+  isActive           Boolean @default(true)
+  createdByAI        Boolean @default(false)
+  
+  @@index([channelId])
+  @@index([isActive])
+  @@map("channel_extraction_configs")
+}

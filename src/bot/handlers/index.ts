@@ -16,7 +16,6 @@ export * from './states/state-handler';
 export * from './words/learn-words.handler';
 export * from './words/learning-words.handler';
 export * from './words/word-translation.handler';
-export * from './words/word.handler';
 
 // Repetition handlers
 export * from './repetition/repetition.handler';

@@ -5,42 +5,59 @@ import { Logger } from '@nestjs/common';
  * Декоратор для обгортання методу класу в try-catch блок
  * та перетворення будь-яких помилок у вказаний або типовий тип помилки
  */
-export function CatchErrors(
-  options: {
-    errorMessage?: string;
-    errorType?: new (
-      message: string,
-      options: any
-    ) => Error;
-    context?:
-      | Record<string, unknown>
-      | ((
-          target: any,
-          methodName: string,
-          args: any[]
-        ) => Record<string, unknown>);
-    rethrow?: boolean;
-    logError?: boolean;
-  } = {}
+/**
+ * Типи для конструктора кастомної помилки
+ */
+type ErrorConstructor<T extends Error = Error> = new (
+  message: string,
+  options?: {
+    cause?: Error;
+    context?: Record<string, unknown>;
+  }
+) => T;
+
+/**
+ * Тип для функції контексту
+ */
+type ContextFunction = (
+  target: unknown,
+  methodName: string,
+  args: unknown[]
+) => Record<string, unknown>;
+
+/**
+ * Опції для декоратора CatchErrors
+ */
+interface CatchErrorsOptions<T extends Error = Error> {
+  errorMessage?: string;
+  errorType?: ErrorConstructor<T>;
+  context?: Record<string, unknown> | ContextFunction;
+  rethrow?: boolean;
+  logError?: boolean;
+}
+
+export function CatchErrors<T extends Error = Error>(
+  options: CatchErrorsOptions<T> = {}
 ) {
   const {
-    errorType = ServiceError,
+    errorType = ServiceError as any,
     rethrow = true,
     logError = true
   } = options;
 
   return function (
-    target: any,
+    target: unknown,
     methodName: string,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;
     const logger = new Logger(
-      `${target.constructor.name}:${methodName}`
+      `${(target as any).constructor.name}:${methodName}`
     );
 
     descriptor.value = async function (
-      ...args: any[]
+      this: unknown,
+      ...args: unknown[]
     ) {
       try {
         return await originalMethod.apply(
@@ -53,7 +70,7 @@ export function CatchErrors(
           if (logError) {
             logger.error(
               `Method execution failed: ${error.message}`,
-              error
+              error.stack
             );
           }
           if (rethrow) {
@@ -81,24 +98,13 @@ export function CatchErrors(
           context = options.context;
         }
 
-        // Логуємо помилку
         if (logError) {
           logger.error(
             `${errorMessage}: ${
               (error as Error).message ||
               'Unknown error'
             }`,
-            {
-              error,
-              context,
-              args: args.map(arg =>
-                typeof arg === 'object'
-                  ? arg
-                    ? Object.keys(arg)
-                    : null
-                  : typeof arg
-              )
-            }
+            (error as Error).stack
           );
         }
 

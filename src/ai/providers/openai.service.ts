@@ -246,6 +246,142 @@ export class OpenAIService
   }
 
   /**
+   * Generate regex patterns for extracting content from channel messages
+   */
+  async generateRegexPatterns(
+    content: string,
+    channelInfo?: {
+      title?: string;
+      username?: string;
+    }
+  ): Promise<{
+    wordRegex: string;
+    translationRegex: string;
+    examplesRegex: string;
+    confidence: number;
+  }> {
+    const cacheKey = this.createCacheKey(
+      `regex_patterns:${content}`
+    );
+
+    try {
+      const result =
+        await this.cacheService.getOrSet(
+          cacheKey,
+          async () => {
+            this.logger.debug(
+              'Generating regex patterns with OpenAI'
+            );
+
+            const messages: ChatCompletionMessageParam[] =
+              [
+                {
+                  role: 'system',
+                  content: `You are an expert at creating JavaScript regular expressions for text extraction.
+              
+              Analyze Telegram channel messages that teach English words and create precise regex patterns to extract:
+              1. The English word being taught
+              2. The translation(s) in Ukrainian/Russian  
+              3. The usage examples with translations
+              
+              Return ONLY valid JSON in this exact format:
+              {
+                "wordRegex": "regex_pattern_with_capture_group",
+                "translationRegex": "regex_pattern_with_capture_group", 
+                "examplesRegex": "regex_pattern_with_capture_group",
+                "confidence": 0.95
+              }
+              
+              Use capture groups () to extract the main content. Make patterns flexible for similar message formats.
+              The confidence should be between 0.0 and 1.0 based on how well the patterns will work.
+              IMPORTANT: For emoji-based patterns, do NOT hardcode specific emoji codepoints. Use a broad character class that includes the entire relevant Unicode block (e.g. all cat-face emoji [😸-😿], all emoticons [😀-😿]) so the pattern still matches when the channel uses a different emoji from the same category.`
+                },
+                {
+                  role: 'user',
+                  content: `Channel: ${channelInfo?.title || channelInfo?.username || 'Unknown'}
+
+Message content to analyze:
+"${content}"
+
+Create regex patterns to extract the word, translation, and examples from this message format. Focus on the structure and delimiters used.`
+                }
+              ];
+
+            const completion =
+              await this.openai.chat.completions.create(
+                {
+                  model:
+                    this.config.openAIConfig
+                      .model,
+                  messages,
+                  max_tokens: 500,
+                  temperature: 0.3,
+                  response_format: {
+                    type: 'json_object'
+                  }
+                }
+              );
+
+            const responseContent =
+              completion.choices[0]?.message
+                ?.content;
+            if (!responseContent) {
+              throw new Error(
+                'No response from OpenAI'
+              );
+            }
+
+            const parsed = JSON.parse(
+              responseContent
+            );
+
+            // Validate response structure
+            if (
+              !parsed.wordRegex ||
+              !parsed.translationRegex ||
+              !parsed.examplesRegex
+            ) {
+              throw new Error(
+                'Invalid response format from OpenAI'
+              );
+            }
+
+            return {
+              wordRegex: parsed.wordRegex,
+              translationRegex:
+                parsed.translationRegex,
+              examplesRegex: parsed.examplesRegex,
+              confidence: parsed.confidence || 0.5
+            };
+          },
+          300 // Cache for 5 minutes
+        );
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        'Error generating regex patterns',
+        {
+          error: error.message,
+          channelInfo,
+          contentLength: content.length
+        }
+      );
+
+      // Fallback patterns based on the example message format
+      return {
+        wordRegex:
+          '(?:😼|🔤)\\s*([a-zA-Z]+)\\s*-',
+        translationRegex:
+          '-\\s*([^\\n]+?)(?:\\n|$)',
+        examplesRegex:
+          '([0-9]️⃣[\\s\\S]*?)(?:\\n\\n[A-Z]|$)',
+        confidence: 0.3
+      };
+    }
+  }
+
+  /**
    * Створює хеш для кешування запитів з зображеннями
    */
   private createImageCacheKey(

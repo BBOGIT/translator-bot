@@ -30,7 +30,7 @@ export class MemoryCacheService
   );
   private cache = new Map<
     string,
-    CacheEntry<any>
+    CacheEntry<unknown>
   >();
 
   constructor(
@@ -66,7 +66,7 @@ export class MemoryCacheService
 
     // Кеш-хіт
     this.monitoringService.recordHit(key);
-    return entry.data;
+    return entry.data as T;
   }
 
   /**

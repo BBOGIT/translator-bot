@@ -7,13 +7,14 @@ import { LearningWordsHandler } from './words/learning-words.handler';
 import { MainMenuCommandHandler } from './commands/main-menu.handler';
 import { CustomerHandler } from './commands/customer.handler';
 import { WordRepetitionHandler } from './repetition/word-repetition.handler';
-import { WordProcessingHandler } from './words/word.handler';
 import { WordTranslationHandler } from './words/word-translation.handler';
 import { StateHandler } from './states/state-handler';
+import { ForwardedMessageHandler } from './forwarded/forwarded-message.handler';
 import { CustomerModule } from '../../customer/customer.module';
 import { MessageModule } from '../../message/message.module';
 import { WordModule } from '../../word/word.module';
 import { AiModule } from '../../ai/ai.module';
+import { ChannelModule } from '../../channel/channel.module';
 import { StrategiesModule } from '../strategies/strategies.module';
 import { JobsModule } from '../../jobs/jobs.module';
 
@@ -23,6 +24,7 @@ import { JobsModule } from '../../jobs/jobs.module';
     MessageModule,
     WordModule,
     AiModule,
+    ChannelModule,
     StrategiesModule,
     JobsModule
   ],
@@ -35,9 +37,9 @@ import { JobsModule } from '../../jobs/jobs.module';
     MainMenuCommandHandler,
     CustomerHandler,
     WordRepetitionHandler,
-    WordProcessingHandler,
     WordTranslationHandler,
-    StateHandler
+    StateHandler,
+    ForwardedMessageHandler
   ],
   exports: [
     CommandDispatcher,

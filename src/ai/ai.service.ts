@@ -10,8 +10,9 @@ import { OpenAIService } from './providers/openai.service';
 import { DeepseekService } from './providers/deepseek.service';
 import { IAIProvider } from './interfaces/ai-provider.interface';
 import { AIResponse } from './interfaces/ai-response.interface';
-import { AIProviderError } from '../common/errors/domain-errors';
+import { AIProviderError, ServiceError } from '../common/errors/domain-errors';
 import { CatchErrors } from '../common/decorators/catch-errors.decorator';
+import { AICacheService } from './services/ai-cache.service';
 
 @Injectable()
 export class AiService {
@@ -23,7 +24,8 @@ export class AiService {
   constructor(
     private readonly config: AIConfig,
     private readonly openAIService: OpenAIService,
-    private readonly deepseekService: DeepseekService
+    private readonly deepseekService: DeepseekService,
+    private readonly cacheService: AICacheService
   ) {
     this.provider = this.getProvider();
     this.logProviderInitialization();
@@ -31,13 +33,13 @@ export class AiService {
 
   @CatchErrors({
     errorMessage: 'Failed to process text',
-    errorType: AIProviderError,
+    errorType: ServiceError,
     context: (instance, _, args) => ({
-      provider: instance.config.provider,
-      textLength: args[0]?.length,
+      provider: (instance as any).config.provider,
+      textLength: (args[0] as string)?.length,
       timestamp: new Date().toISOString(),
-      modelConfig: instance.getModelConfig(),
-      maxTokens: instance.getMaxTokens()
+      modelConfig: (instance as any).getModelConfig(),
+      maxTokens: (instance as any).getMaxTokens()
     })
   })
   async processText(
@@ -59,15 +61,43 @@ export class AiService {
       }
     );
 
+    // 🚀 СПОЧАТКУ ПЕРЕВІРЯЄМО КЕШ
+    const cachedResponse =
+      await this.cacheService.getTextResponse(
+        text,
+        this.config.provider
+      );
+
+    if (cachedResponse) {
+      this.logger.debug(
+        'Returning cached text response',
+        {
+          processingTime: Date.now() - startTime,
+          cacheHit: true,
+          textLength: text.length
+        }
+      );
+      return cachedResponse;
+    }
+
     // Log pre-processing state
     this.logger.debug('Pre-processing checks', {
       isTextEmpty: !text,
       isProviderReady: !!this.provider,
-      providerType: this.config.provider
+      providerType: this.config.provider,
+      cacheHit: false
     });
 
+    // ВИКЛИКАЄМО AI ПРОВАЙДЕР, ЯКЩО НЕМАЄ В КЕШІ
     const response =
       await this.provider.processText(text);
+
+    // 💾 ЗБЕРІГАЄМО ВІДПОВІДЬ В КЕШ
+    await this.cacheService.setTextResponse(
+      text,
+      this.config.provider,
+      response
+    );
 
     // Log response details
     this.logger.debug(
@@ -80,7 +110,107 @@ export class AiService {
             response.translation?.length,
           hasExamples: !!response.examples,
           examplesCount: response.examples?.length
+        },
+        cached: true
+      }
+    );
+
+    return response;
+  }
+
+  /**
+   * Generate regex patterns for extracting content from channel messages
+   * @param content The message content to analyze
+   * @param channelInfo Information about the channel
+   * @returns Regex patterns for extraction
+   */
+  @CatchErrors({
+    errorMessage:
+      'Failed to generate regex patterns',
+    errorType: ServiceError,
+    context: (instance, _, args) => ({
+      provider: (instance as any).config.provider,
+      contentLength: (args[0] as string)?.length,
+      timestamp: new Date().toISOString()
+    })
+  })
+  async generateRegexPatterns(
+    content: string,
+    channelInfo?: {
+      title?: string;
+      username?: string;
+    }
+  ): Promise<{
+    wordRegex: string;
+    translationRegex: string;
+    examplesRegex: string;
+    confidence: number;
+  }> {
+    const startTime = Date.now();
+    const channelId =
+      channelInfo?.username ||
+      channelInfo?.title ||
+      'unknown';
+
+    this.logger.debug(
+      'Starting regex pattern generation',
+      {
+        provider: this.config.provider,
+        contentLength: content.length,
+        channelTitle: channelInfo?.title,
+        channelId,
+        timestamp: new Date().toISOString()
+      }
+    );
+
+    // 🔍 ПЕРЕВІРЯЄМО КЕШ ДЛЯ REGEX ПАТТЕРНІВ
+    const cachedPatterns =
+      await this.cacheService.getRegexPatterns(
+        content,
+        channelId,
+        this.config.provider
+      );
+
+    if (cachedPatterns) {
+      this.logger.debug(
+        'Returning cached regex patterns',
+        {
+          processingTime: Date.now() - startTime,
+          cacheHit: true,
+          channelId,
+          confidence: cachedPatterns.confidence
         }
+      );
+      return cachedPatterns;
+    }
+
+    // ГЕНЕРУЄМО ПАТТЕРНИ ЧЕРЕЗ AI ПРОВАЙДЕР
+    const response =
+      await this.provider.generateRegexPatterns(
+        content,
+        channelInfo
+      );
+
+    // 💾 ЗБЕРІГАЄМО ПАТТЕРНИ В КЕШ
+    await this.cacheService.setRegexPatterns(
+      content,
+      channelId,
+      this.config.provider,
+      response
+    );
+
+    this.logger.debug(
+      'Regex pattern generation completed',
+      {
+        processingTime: Date.now() - startTime,
+        confidence: response.confidence,
+        hasWordRegex: !!response.wordRegex,
+        hasTranslationRegex:
+          !!response.translationRegex,
+        hasExamplesRegex:
+          !!response.examplesRegex,
+        channelId,
+        cached: true
       }
     );
 
@@ -89,12 +219,12 @@ export class AiService {
 
   @CatchErrors({
     errorMessage: 'Failed to process image',
-    errorType: AIProviderError,
+    errorType: ServiceError,
     context: (instance, _, args) => ({
-      provider: instance.config.provider,
-      imageSize: args[0]?.length,
+      provider: (instance as any).config.provider,
+      imageSize: (args[0] as Buffer)?.length,
       timestamp: new Date().toISOString(),
-      providerConfig: instance.getProviderConfig()
+      providerConfig: (instance as any).getProviderConfig()
     })
   })
   async processImage(
@@ -134,10 +264,44 @@ export class AiService {
       );
     }
 
+    // 🖼️ СТВОРЮЄМО ХЕШ ЗОБРАЖЕННЯ ДЛЯ КЕШУВАННЯ
+    const imageHash =
+      this.cacheService.createImageHashFromBuffer(
+        imageBuffer
+      );
+
+    // 🚀 ПЕРЕВІРЯЄМО КЕШ
+    const cachedResponse =
+      await this.cacheService.getImageResponse(
+        imageHash,
+        this.config.provider
+      );
+
+    if (cachedResponse) {
+      this.logger.debug(
+        'Returning cached image response',
+        {
+          processingTime: Date.now() - startTime,
+          cacheHit: true,
+          imageHash,
+          imageSize: imageBuffer.length
+        }
+      );
+      return cachedResponse;
+    }
+
+    // ОБРОБЛЯЄМО ЗОБРАЖЕННЯ ЧЕРЕЗ AI ПРОВАЙДЕР
     const response =
       await this.provider.processImage(
         imageBuffer
       );
+
+    // 💾 ЗБЕРІГАЄМО В КЕШ
+    await this.cacheService.setImageResponse(
+      imageHash,
+      this.config.provider,
+      response
+    );
 
     // Log response completion
     this.logger.debug(
@@ -150,7 +314,9 @@ export class AiService {
             response.translation?.length,
           hasExamples: !!response.examples,
           examplesCount: response.examples?.length
-        }
+        },
+        imageHash,
+        cached: true
       }
     );
 

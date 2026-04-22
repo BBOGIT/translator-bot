@@ -12,10 +12,12 @@
         "uk": "Мій прогрес"
     },
     "welcomeMessageText": {
-        "uk": "Вітаю, {{firstName}} {{lastName}}"
+        "uk": "Вітаю, {{firstName}} {{lastName}}",
+        "en": "Hello, {{firstName}} {{lastName}}"
     },
     "waitingForTranslationText": {
-        "uk": "Відправ, будь-ласка, переклад тексту"
+        "uk": "Відправ, будь-ласка, переклад тексту",
+        "en": "Send, please, the translation of the text"
     },
     "translationnText": {
         "uk": "Переклад: {{translation}}"
@@ -46,6 +48,9 @@
     },
     "iknowWordText": {
         "uk": "Окей, це круто :)"
+    },
+    "learnWordText": {
+        "uk": "Зрозуміло, продовжуй вчити це слово 💪"
     },
     "repeatWordsText": {
         "uk": "Можемо почати повторення слів прямо зараз, або обери коли тобі буде зручно"
@@ -259,5 +264,20 @@
     },
     "noTimeSetText": {
         "uk": "За замовчуванням (20:00)"
+    },
+    "savedWordFromChannelText": {
+        "uk": "✅ *Слово збережено з каналу!*\n\n📝 Слово: *{{word}}*\n🇺🇦 Переклад: {{translation}}\n📺 Канал: {{channelName}}\n\n📚 Приклади:\n{{examples}}"
+    },
+    "savedWordFromNewChannelText": {
+        "uk": "✅ *Слово збережено з нового каналу!*\n\n📝 Слово: *{{word}}*\n🇺🇦 Переклад: {{translation}}\n📺 Канал: {{channelName}}\n\n🤖 *AI створив нову конфігурацію для цього каналу*\n\n📚 Приклади:\n{{examples}}"
+    },
+    "channelExtractionErrorText": {
+        "uk": "❌ *Помилка обробки повідомлення*\n\nНе вдалося обробити переслане повідомлення з каналу. Спробуйте ще раз або введіть слово вручну."
+    },
+    "channelExtractionIncompleteText": {
+        "uk": "⚠️ *Неповні дані*\n\nНе вдалося витягти всі необхідні дані з повідомлення каналу. Переконайтеся, що повідомлення містить слово та переклад."
+    },
+    "wordAlreadyExistsText": {
+        "uk": "ℹ️ *Слово вже існує*\n\nСлово *{{word}}* вже збережено у вашій колекції для вивчення."
     }
 }

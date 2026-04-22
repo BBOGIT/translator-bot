@@ -24,7 +24,7 @@ export class ErrorHandlingInterceptor
   intercept(
     context: ExecutionContext,
     next: CallHandler
-  ): Observable<any> {
+  ): Observable<unknown> {
     return next.handle().pipe(
       catchError(error => {
         // Skip if it's already an AppError

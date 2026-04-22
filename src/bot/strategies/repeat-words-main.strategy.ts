@@ -54,11 +54,12 @@ export class RepeatWordsMainStrategy extends BaseStateStrategy {
       });
 
       // Отримуємо поточний час користувача для відображення
-      const currentTime = new Date().toLocaleTimeString('uk-UA', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
+      const currentTime =
+        new Date().toLocaleTimeString('uk-UA', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
 
       // Відправляємо меню налаштування розкладу повторень
       await messageService.TelegramSendMessage({
@@ -69,10 +70,15 @@ export class RepeatWordsMainStrategy extends BaseStateStrategy {
           currentTime: currentTime
         }
       });
-    } else if (command === COMMANDS.VIEW_SETTINGS) {
+    } else if (
+      command === COMMANDS.VIEW_SETTINGS
+    ) {
       // Показуємо поточні налаштування
-      const currentRepetitionTime = (customer as any)?.repetitionTime || '20:00';
-      const settingsDetails = (customer as any)?.repetitionTime 
+      const currentRepetitionTime =
+        (customer as any)?.repetitionTime ||
+        '20:00';
+      const settingsDetails = (customer as any)
+        ?.repetitionTime
         ? '✅ Налаштування збережено'
         : '⚠️ Використовується час за замовчуванням';
 
@@ -81,7 +87,8 @@ export class RepeatWordsMainStrategy extends BaseStateStrategy {
         templateName: 'viewSettings',
         lang,
         dynamicVariables: {
-          currentRepetitionTime: currentRepetitionTime,
+          currentRepetitionTime:
+            currentRepetitionTime,
           settingsDetails: settingsDetails
         }
       });

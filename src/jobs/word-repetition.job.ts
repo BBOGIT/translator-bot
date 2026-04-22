@@ -28,12 +28,6 @@ export class WordRepetitionJob {
     WordRepetitionJob.name
   );
 
-  private readonly CRON_EXPRESSION =
-    CronExpression.EVERY_HOUR;
-  // Інтервали повторення винесені в окрему константу для кращої підтримки
-  private readonly REPEAT_INTERVALS = [
-    1, 3, 7, 14, 30, 90
-  ];
 
   constructor(
     private readonly prisma: PrismaService,
@@ -43,6 +37,35 @@ export class WordRepetitionJob {
     private readonly cacheService: CacheInterface
   ) {}
 
+  private readonly DEFAULT_REPETITION_HOUR = 20;
+
+  private getEffectiveHour(
+    repetitionTime: string | null
+  ): number {
+    if (!repetitionTime) {
+      return this.DEFAULT_REPETITION_HOUR;
+    }
+    const hour = parseInt(
+      repetitionTime.split(':')[0],
+      10
+    );
+    return Number.isFinite(hour)
+      ? hour
+      : this.DEFAULT_REPETITION_HOUR;
+  }
+
+  private isAlreadyNotifiedToday(
+    words: { lastNotificationAt: Date | null }[]
+  ): boolean {
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    return words.every(
+      word =>
+        word.lastNotificationAt !== null &&
+        word.lastNotificationAt >= todayMidnight
+    );
+  }
+
   @Cron(CronExpression.EVERY_HOUR)
   async handleWordRepetition() {
     try {
@@ -50,17 +73,15 @@ export class WordRepetitionJob {
         'Hourly check for word repetitions'
       );
       const currentHour = new Date().getHours();
-      const timeString = `${String(currentHour).padStart(2, '0')}:00`;
 
       const customers =
         await this.prisma.customer.findMany();
 
       const customersToNotify = customers.filter(
         customer =>
-          customer.repetitionTime ===
-            timeString ||
-          (customer.repetitionTime === null &&
-            timeString === '20:00')
+          this.getEffectiveHour(
+            customer.repetitionTime
+          ) === currentHour
       );
 
       for (const customer of customersToNotify) {
@@ -69,27 +90,36 @@ export class WordRepetitionJob {
             customer.id
           );
 
-        if (wordsToRepeat.length > 0) {
-          const count = wordsToRepeat.length;
-          const wordForm = this.getWordForm(count);
-          
-          await this.messageService.TelegramSendMessage(
-            {
-              chatId: customer.chatId,
-              templateName: 'repetitionPrompt',
-              lang: 'uk',
-              dynamicVariables: {
-                count: count.toString(),
-                wordForm: wordForm
-              }
-            }
-          );
+        if (wordsToRepeat.length === 0) {
+          continue;
         }
+
+        if (this.isAlreadyNotifiedToday(wordsToRepeat)) {
+          this.logger.log(
+            `Skipping customer ${customer.id}: all words already notified today`
+          );
+          continue;
+        }
+
+        const count = wordsToRepeat.length;
+        const wordForm = this.getWordForm(count);
+
+        await this.messageService.TelegramSendMessage(
+          {
+            chatId: customer.chatId,
+            templateName: 'repetitionPrompt',
+            lang: 'uk',
+            dynamicVariables: {
+              count: count.toString(),
+              wordForm: wordForm
+            }
+          }
+        );
       }
     } catch (error) {
       this.logger.error(
-        'Error handling word repetitions:',
-        error
+        `Error handling word repetitions: ${error.message}`,
+        error.stack
       );
     }
   }
@@ -180,8 +210,8 @@ export class WordRepetitionJob {
       );
     } catch (error) {
       this.logger.error(
-        `Помилка при відправці нагадування для слова ${word.id}:`,
-        error
+        `Помилка при відправці нагадування для слова ${word.id}: ${error.message}`,
+        error.stack
       );
     }
   }
@@ -201,8 +231,8 @@ export class WordRepetitionJob {
       );
     } catch (error) {
       this.logger.error(
-        `Помилка при оновленні статусу повторення для слова ${wordId}:`,
-        error
+        `Помилка при оновленні статусу повторення для слова ${wordId}: ${error.message}`,
+        error.stack
       );
       throw error;
     }
@@ -279,8 +309,8 @@ export class WordRepetitionJob {
       );
     } catch (error) {
       this.logger.error(
-        `Помилка під час запуску повторення слів для користувача ${customerId}:`,
-        error
+        `Помилка під час запуску повторення слів для користувача ${customerId}: ${error.message}`,
+        error.stack
       );
 
       // Відправляємо повідомлення про помилку

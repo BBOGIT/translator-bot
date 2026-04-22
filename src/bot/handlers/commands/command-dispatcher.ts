@@ -10,13 +10,13 @@ import { MainMenuCommandHandler } from './main-menu.handler';
 import { LearnWordsCommandHandler } from '../words/learn-words.handler';
 import { RepetitionCommandHandler } from '../repetition/repetition.handler';
 import { ProgressCommandHandler } from './progress.handler';
-import { WordProcessingHandler } from '../words/word.handler';
 import { CustomerHandler } from './customer.handler';
 import { StateHandler } from '../states/state-handler';
 import { sendErrorMessage } from '../core/error-handler';
 import { LearningWordsHandler } from '../words/learning-words.handler';
 import { WordTranslationHandler } from '../words/word-translation.handler';
 import { WordRepetitionHandler } from '../repetition/word-repetition.handler';
+import { ForwardedMessageHandler } from '../forwarded/forwarded-message.handler';
 import { CustomerService } from '../../../customer/customer.service';
 import { MessageService } from '../../../message/message.service';
 import { AiService } from '../../../ai/ai.service';
@@ -41,12 +41,12 @@ export class CommandDispatcher {
     private readonly learnWordsHandler: LearnWordsCommandHandler,
     private readonly repetitionHandler: RepetitionCommandHandler,
     private readonly progressHandler: ProgressCommandHandler,
-    private readonly wordHandler: WordProcessingHandler,
     private readonly customerHandler: CustomerHandler,
     private readonly stateHandler: StateHandler,
     private readonly learningWordsHandler: LearningWordsHandler,
     private readonly wordTranslationHandler: WordTranslationHandler,
     private readonly wordRepetitionHandler: WordRepetitionHandler,
+    private readonly forwardedMessageHandler: ForwardedMessageHandler,
     private readonly customerService: CustomerService,
     private readonly messageService: MessageService,
     private readonly aiService: AiService,
@@ -69,9 +69,7 @@ export class CommandDispatcher {
       progressHandler,
       learningWordsHandler,
       wordTranslationHandler,
-      wordRepetitionHandler,
-      // Застарілий обробник для зворотної сумісності
-      wordHandler
+      wordRepetitionHandler
     ];
   }
 
@@ -93,7 +91,6 @@ export class CommandDispatcher {
         `Dispatching command: ${command}, customer state: ${customer?.state}, webhookType: ${dto.webhookType}`
       );
 
-      // Handle new customer first if no customer exists
       if (!customer) {
         this.logger.log(
           `No customer found for command: ${command}, creating new customer`
@@ -104,7 +101,30 @@ export class CommandDispatcher {
         return;
       }
 
-      // 1. Priority handling for callback queries (button clicks)
+      if (
+        dto.isForwardedFromChannel &&
+        dto.channelInfo
+      ) {
+
+        const isWordLearningMessage =
+          this.isWordLearningMessage(
+            dto.text || ''
+          );
+
+        if (isWordLearningMessage) {
+          await this.forwardedMessageHandler.execute(
+            context
+          );
+          return;
+        } else {
+          this.logger.log(
+            `Forwarded message does not appear to be a word learning message, ignoring`
+          );
+          return;
+        }
+      }
+
+      // 1. Priority handling for button clicks
       if (
         dto.webhookType ===
         WebhookTypeEnum.callbackQuery
@@ -179,5 +199,33 @@ export class CommandDispatcher {
         messageService
       );
     }
+  }
+
+  private isWordLearningMessage(
+    content: string
+  ): boolean {
+    if (!content || !content.trim()) return false;
+
+    const hasWordAndTranslation =
+      content.includes(' - ');
+    const hasEnglishWord =
+      content.match(/[a-zA-Z]+/) !== null;
+    const hasExamples =
+      content.includes('️⃣') ||
+      content.match(/\d+\./) !== null;
+
+    const hasEmoji =
+      content.includes('😼') ||
+      content.includes('🔤');
+    const hasNumberedExamples =
+      content.match(/[0-9]️⃣/) !== null;
+
+    return (
+      hasWordAndTranslation &&
+      hasEnglishWord &&
+      (hasExamples ||
+        hasEmoji ||
+        hasNumberedExamples)
+    );
   }
 }

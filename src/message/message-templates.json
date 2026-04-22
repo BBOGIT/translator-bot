@@ -72,6 +72,12 @@
         "body": "{\"text\":\"{{iknowWordText}}\",\"chat_id\":\"{{chatId}}\"}"
     },
     {
+        "name": "learnWord",
+        "description": "learnWord - підтвердження що слово позначено для подальшого вивчення",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{learnWordText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
         "name": "repeatWords",
         "description": "repeatWords",
         "channel": "telegram",
@@ -232,5 +238,35 @@
         "description": "Показ поточних налаштувань часу",
         "channel": "telegram",
         "body": "{\"text\":\"{{viewSettingsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{changeTimeButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}, {\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "savedWordFromChannel",
+        "description": "Слово сохранено из пересланного сообщения канала",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{savedWordFromChannelText}}\",\"chat_id\":\"{{chatId}}\",\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "savedWordFromNewChannel",
+        "description": "Слово сохранено из нового канала с созданной AI конфигурацией",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{savedWordFromNewChannelText}}\",\"chat_id\":\"{{chatId}}\",\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "channelExtractionError",
+        "description": "Ошибка при извлечении данных из сообщения канала",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{channelExtractionErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "channelExtractionIncomplete",
+        "description": "Не удалось извлечь полные данные из сообщения канала",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{channelExtractionIncompleteText}}\",\"chat_id\":\"{{chatId}}\"}"
+    },
+    {
+        "name": "wordAlreadyExists",
+        "description": "Слово уже существует в базе данных",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{wordAlreadyExistsText}}\",\"chat_id\":\"{{chatId}}\"}"
     }
 ]

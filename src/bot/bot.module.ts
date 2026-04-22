@@ -16,6 +16,7 @@ import { StaticController } from './controllers/static.controller';
 import { HandlersModule } from './handlers/handlers.module';
 import { StrategiesModule } from './strategies/strategies.module';
 import { RedisModule } from '../redis/redis.module';
+import { ChannelModule } from '../channel/channel.module';
 import { BotConfig } from './bot.config';
 
 @Module({
@@ -27,6 +28,7 @@ import { BotConfig } from './bot.config';
     AiModule,
     TelegramModule,
     RedisModule,
+    ChannelModule,
     forwardRef(() => WebhookModule),
     HandlersModule,
     StrategiesModule

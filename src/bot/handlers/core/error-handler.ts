@@ -31,8 +31,8 @@ export async function sendErrorMessage(
     });
   } catch (error) {
     logger.error(
-      `Failed to send error message to chat ${chatId}`,
-      error
+      `Failed to send error message to chat ${chatId}: ${(error as Error).message}`,
+      (error as Error).stack
     );
   }
 }

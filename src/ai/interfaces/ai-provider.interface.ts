@@ -5,4 +5,16 @@ export interface IAIProvider {
   processImage(
     imageBuffer: Buffer
   ): Promise<AIResponse>;
+  generateRegexPatterns(
+    content: string,
+    channelInfo?: {
+      title?: string;
+      username?: string;
+    }
+  ): Promise<{
+    wordRegex: string;
+    translationRegex: string;
+    examplesRegex: string;
+    confidence: number;
+  }>;
 }

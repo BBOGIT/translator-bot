@@ -2,13 +2,13 @@ import {
   Test,
   TestingModule
 } from '@nestjs/testing';
-import { CommandDispatcher } from './command-dispatcher';
-import { MainMenuCommandHandler } from './main-menu.handler';
+import { CommandDispatcher } from '../command-dispatcher';
+import { MainMenuCommandHandler } from '../main-menu.handler';
 import { LearnWordsCommandHandler } from './learn-words.handler';
 import { RepetitionCommandHandler } from './repetition.handler';
-import { ProgressCommandHandler } from './progress.handler';
+import { ProgressCommandHandler } from '../progress.handler';
 import { WordProcessingHandler } from './word.handler';
-import { CustomerHandler } from './customer.handler';
+import { CustomerHandler } from '../customer.handler';
 import { CommandContext } from './interfaces';
 import { WebhookResponseDto } from '../../webhook/dto';
 import { Logger } from '@nestjs/common';

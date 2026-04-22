@@ -23,7 +23,8 @@ export class CustomerMapper {
       lastName: prismaCustomer.lastName,
       channel:
         prismaCustomer.channel as ChannelEnum,
-      repetitionTime: prismaCustomer.repetitionTime,
+      repetitionTime:
+        prismaCustomer.repetitionTime,
       createdAt: prismaCustomer.createdAt,
       updatedAt: prismaCustomer.updatedAt,
       words: prismaCustomer.Word

@@ -46,7 +46,8 @@ const cacheProvider = {
   ],
   exports: [
     'CACHE_SERVICE',
-    CacheMonitoringService
+    CacheMonitoringService,
+    RedisCacheService
   ]
 })
 export class CacheModule {}

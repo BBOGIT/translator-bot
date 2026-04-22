@@ -12,6 +12,10 @@ import { CustomerState } from '../../../customer/enum/customer-state.enum';
 import { withErrorHandling } from '../core/error-handler';
 import { WordRepetitionJob } from '../../../jobs/word-repetition.job';
 import { CacheInterface } from '../../../cache/interfaces/cache.interface';
+import {
+  ExtendedCustomer,
+  getRepetitionTime
+} from '../../../customer/interfaces/extended-customer.interface';
 
 /**
  * Handler for word repetition commands
@@ -43,14 +47,8 @@ export class RepetitionCommandHandler
         COMMANDS.REPEAT_WORDS_SCHEDULE_MONTH,
         COMMANDS.VIEW_SETTINGS
       ].includes(command) ||
-      command.startsWith(
-        COMMANDS.PREVIOUS_WORD
-      ) ||
-      command.startsWith(COMMANDS.NEXT_WORD) ||
-      command.startsWith(
-        COMMANDS.I_HAVE_LEARNED_BUTTON
-      ) ||
-      command.startsWith(COMMANDS.I_NEED_TO_LEARN)
+      command.startsWith(COMMANDS.PREVIOUS_WORD) ||
+      command.startsWith(COMMANDS.NEXT_WORD)
     );
   }
 
@@ -267,9 +265,11 @@ export class RepetitionCommandHandler
       return;
     }
 
-    const currentRepetitionTime =
-      (customer as any).repetitionTime || '20:00';
-    const settingsDetails = (customer as any)
+    const currentRepetitionTime = getRepetitionTime(
+      customer as ExtendedCustomer,
+      '20:00'
+    );
+    const settingsDetails = (customer as ExtendedCustomer)
       .repetitionTime
       ? '✅ Налаштування збережено'
       : '⚠️ Використовується час за замовчуванням';

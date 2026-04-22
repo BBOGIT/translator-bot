@@ -54,14 +54,8 @@ export class GetWordsForRepetitionHandler
         const whereClause: any = {
           needToLearn: true,
           OR: [
-            { lastNotificationAt: null }, // Ніколи не було сповіщень
-            {
-              lastNotificationAt: {
-                lt: new Date(
-                  new Date().setHours(0, 0, 0, 0)
-                ) // Сповіщення було до сьогодні
-              }
-            }
+            { nextRepeatDate: null },
+            { nextRepeatDate: { lte: new Date() } }
           ]
         };
 

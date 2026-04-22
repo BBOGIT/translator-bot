@@ -83,11 +83,11 @@ export class MetricsInterceptor
     method: string,
     path: string,
     startTime: number,
-    response: any
+    response: Response | unknown
   ): void {
     const endTime = Date.now();
     const duration = endTime - startTime;
-    const statusCode = response.statusCode || 200;
+    const statusCode = (response as any)?.statusCode || 200;
 
     this.metricsService.decrementHttpRequestInProgress(
       method,

@@ -13,13 +13,18 @@ export class WaitingForCustomTimeStrategy extends BaseStateStrategy {
     context: CommandContext
   ): Promise<void> {
     const { dto, services, lang } = context;
-    const { customerService, messageService } = services;
+    const { customerService, messageService } =
+      services;
     const command = dto.text;
 
     // Обробка ручного введення часу
-    const timeRegex = /^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$/;
+    const timeRegex =
+      /^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$/;
     if (timeRegex.test(command)) {
-      await this.setRepetitionTime(command, context);
+      await this.setRepetitionTime(
+        command,
+        context
+      );
     } else {
       await messageService.TelegramSendMessage({
         chatId: dto.chatId,
@@ -35,7 +40,8 @@ export class WaitingForCustomTimeStrategy extends BaseStateStrategy {
     context: CommandContext
   ): Promise<void> {
     const { dto, services, lang } = context;
-    const { customerService, messageService } = services;
+    const { customerService, messageService } =
+      services;
 
     await customerService.update({
       chatId: dto.chatId,
@@ -53,5 +59,3 @@ export class WaitingForCustomTimeStrategy extends BaseStateStrategy {
     });
   }
 }
-
-

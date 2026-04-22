@@ -4,7 +4,8 @@ import {
   IsArray,
   IsObject,
   IsOptional,
-  IsEnum
+  IsEnum,
+  IsBoolean
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -208,8 +209,24 @@ class StickerDto {
       'Optional. For premium regular stickers, premium animation for the sticker'
   })
   @IsOptional()
-  @Type(() => Object) // Placeholder for File DTO
-  premium_animation?: Record<string, any>;
+  @Type(() => Object) // Premium animation sticker
+  premium_animation?: {
+    file_id: string;
+    file_unique_id: string;
+    width: number;
+    height: number;
+    duration: number;
+    thumbnail?: {
+      file_id: string;
+      file_unique_id: string;
+      width: number;
+      height: number;
+      file_size?: number;
+    };
+    file_name?: string;
+    mime_type?: string;
+    file_size?: number;
+  };
 
   @ApiPropertyOptional({
     description:
@@ -617,8 +634,17 @@ class MessageDto {
       'Optional. For messages forwarded from channels or from anonymous administrators, information about the original sender chat'
   })
   @IsOptional()
-  @Type(() => Object) // Placeholder for ChatDto
-  forward_from_chat?: Record<string, any>;
+  @Type(() => Object) // Chat information for forwarded messages
+  forward_from_chat?: {
+    id: number;
+    type: 'private' | 'group' | 'supergroup' | 'channel';
+    title?: string;
+    username?: string;
+    first_name?: string;
+    last_name?: string;
+    description?: string;
+    invite_link?: string;
+  };
 
   @ApiPropertyOptional({
     description:
@@ -627,6 +653,32 @@ class MessageDto {
   @IsOptional()
   @IsNumber()
   forward_from_message_id?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Optional. For forwarded messages, information about the original sender'
+  })
+  @IsOptional()
+  @Type(() => Object)
+  forward_origin?: {
+    type: string;
+    date: number;
+    chat?: {
+      id: number;
+      title?: string;
+      username?: string;
+      type: string;
+    };
+    message_id?: number;
+  };
+
+  @ApiPropertyOptional({
+    description:
+      'Optional. For messages forwarded from channels, date when the original message was sent in Unix time'
+  })
+  @IsOptional()
+  @IsNumber()
+  forward_date?: number;
 
   @ApiPropertyOptional({
     description:
@@ -811,6 +863,27 @@ class WebhookResponseDto {
   @IsObject()
   @Type(() => TelegramWebhookBodyDto)
   originalWebhook: TelegramWebhookBodyDto;
+
+  @ApiPropertyOptional({
+    description:
+      'Whether the message is forwarded from a channel'
+  })
+  @IsOptional()
+  @IsBoolean()
+  isForwardedFromChannel?: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Information about the channel if message is forwarded'
+  })
+  @IsOptional()
+  @IsObject()
+  channelInfo?: {
+    id: string;
+    title?: string;
+    username?: string;
+    type?: string;
+  };
 }
 
 export {

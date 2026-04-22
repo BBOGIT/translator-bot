@@ -7,18 +7,31 @@ const logger = new Logger('ErrorWrapper');
  * Wraps an async function in a try-catch block
  * and converts any errors to the specified or default error type
  */
-export async function wrapAsync<T>(
-  operation: () => Promise<T>,
-  options: {
-    errorMessage?: string;
-    errorType?: new (
-      message: string,
-      options: any
-    ) => Error;
+/**
+ * Тип для конструктора помилки
+ */
+type ErrorConstructor<T extends Error = Error> = new (
+  message: string,
+  options?: {
+    cause?: Error;
     context?: Record<string, unknown>;
-    rethrow?: boolean;
-    logError?: boolean;
-  } = {}
+  }
+) => T;
+
+/**
+ * Опції для обгортання асинхронних операцій
+ */
+interface WrapAsyncOptions<T extends Error = Error> {
+  errorMessage?: string;
+  errorType?: ErrorConstructor<T>;
+  context?: Record<string, unknown>;
+  rethrow?: boolean;
+  logError?: boolean;
+}
+
+export async function wrapAsync<T, E extends Error = Error>(
+  operation: () => Promise<T>,
+  options: WrapAsyncOptions<E> = {}
 ): Promise<T> {
   const {
     errorMessage = 'Operation failed',
@@ -36,7 +49,7 @@ export async function wrapAsync<T>(
       if (logError) {
         logger.error(
           `${errorMessage}: ${error.message}`,
-          error
+          error.stack
         );
       }
       if (rethrow) {
@@ -45,21 +58,16 @@ export async function wrapAsync<T>(
       return null as unknown as T;
     }
 
-    // Log the error
     if (logError) {
       logger.error(
         `${errorMessage}: ${
           (error as Error).message ||
           'Unknown error'
         }`,
-        {
-          error,
-          context
-        }
+        (error as Error).stack
       );
     }
 
-    // Create and throw the custom error
     const customError = new errorType(
       errorMessage,
       {
@@ -76,22 +84,9 @@ export async function wrapAsync<T>(
   }
 }
 
-/**
- * Wraps a synchronous function in a try-catch block
- * and converts any errors to the specified or default error type
- */
-export function wrapSync<T>(
+export function wrapSync<T, E extends Error = Error>(
   operation: () => T,
-  options: {
-    errorMessage?: string;
-    errorType?: new (
-      message: string,
-      options: any
-    ) => Error;
-    context?: Record<string, unknown>;
-    rethrow?: boolean;
-    logError?: boolean;
-  } = {}
+  options: WrapAsyncOptions<E> = {}
 ): T {
   const {
     errorMessage = 'Operation failed',
@@ -104,12 +99,11 @@ export function wrapSync<T>(
   try {
     return operation();
   } catch (error) {
-    // Skip wrapping if it's already the desired error type
     if (error instanceof errorType) {
       if (logError) {
         logger.error(
           `${errorMessage}: ${error.message}`,
-          error
+          error.stack
         );
       }
       if (rethrow) {
@@ -118,17 +112,13 @@ export function wrapSync<T>(
       return null as unknown as T;
     }
 
-    // Log the error
     if (logError) {
       logger.error(
         `${errorMessage}: ${
           (error as Error).message ||
           'Unknown error'
         }`,
-        {
-          error,
-          context
-        }
+        (error as Error).stack
       );
     }
 
