@@ -4,18 +4,14 @@ import { WordController } from './word.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { WordCqrsModule } from './cqrs/cqrs.module';
 import { CacheModule } from '../cache/cache.module';
+import { AiModule } from '../ai/ai.module';
 
-/**
- * Модуль для роботи зі словами
- *
- * Використовує WordCqrsModule для реалізації патерну CQRS
- * та CacheModule для оптимізації запитів
- */
 @Module({
   imports: [
     PrismaModule,
     WordCqrsModule,
-    CacheModule
+    CacheModule,
+    AiModule
   ],
   providers: [WordService],
   exports: [WordService],

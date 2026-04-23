@@ -12,7 +12,6 @@ import {
   ValidationPipe,
   BadRequestException,
   ParseBoolPipe,
-  UseGuards
 } from '@nestjs/common';
 import { WordService } from './word.service';
 import {
@@ -21,7 +20,9 @@ import {
   UpdateWordRepetitionDto,
   WordResponseDto,
   PaginatedWordsResponseDto,
-  UpdateWordDto
+  UpdateWordDto,
+  TranslateWordDto,
+  TranslateWordResponseDto
 } from './dto';
 import {
   ApiTags,
@@ -33,11 +34,8 @@ import {
 import { Word } from '@prisma/client';
 import { PaginatedWordsResult } from './cqrs/queries/get-learned-words.query';
 import { WordWithCustomer } from './cqrs/queries/get-words-for-repetition.query';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
 @ApiTags('Words')
 @Controller('words')
-@UseGuards(JwtAuthGuard)
 export class WordController {
   constructor(private wordService: WordService) {}
 
@@ -87,6 +85,19 @@ export class WordController {
       total: paginatedResult.total,
       pages: paginatedResult.pages
     };
+  }
+
+  @Post('translate')
+  @ApiOperation({ summary: 'Translate text using AI' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Translation result.',
+    type: TranslateWordResponseDto
+  })
+  async translateWord(
+    @Body() dto: TranslateWordDto
+  ): Promise<TranslateWordResponseDto> {
+    return this.wordService.translate(dto.text);
   }
 
   @Post()
@@ -270,13 +281,32 @@ export class WordController {
   async getWordCount(
     @Param('customerId', ParseIntPipe)
     customerId: number,
-    @Query('needToLearn', ParseBoolPipe)
-    needToLearn: boolean
+    @Query(
+      'needToLearn',
+      new ParseBoolPipe({ optional: true })
+    )
+    needToLearn?: boolean
   ): Promise<number> {
     return this.wordService.getWordCount(
       customerId,
       needToLearn
     );
+  }
+
+  @Get('customer/:customerId/stats')
+  @ApiOperation({
+    summary: 'Get progress stats for a customer'
+  })
+  @ApiParam({ name: 'customerId', type: Number })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Progress stats for the customer.'
+  })
+  async getProgressStats(
+    @Param('customerId', ParseIntPipe)
+    customerId: number
+  ) {
+    return this.wordService.getUserProgressStats(customerId);
   }
 
   @Get('repetition')

@@ -8,6 +8,18 @@ import {
   IsUrl
 } from 'class-validator';
 
+export class TranslateWordDto {
+  @IsString()
+  @IsNotEmpty()
+  text: string;
+}
+
+export class TranslateWordResponseDto {
+  word: string;
+  translation: string;
+  examples: string[];
+}
+
 export class CreateWordDto {
   @IsString()
   @IsNotEmpty()
@@ -65,9 +77,9 @@ export class GetWordDto {
 
 // Додаємо новий DTO для оновлення статусу повторення
 export class UpdateWordRepetitionDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  wordId: number;
+  wordId?: number;
 
   @IsNotEmpty()
   @IsBoolean()

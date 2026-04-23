@@ -9,10 +9,12 @@ import {
   QueryBus
 } from '@nestjs/cqrs';
 import { PrismaService } from '../prisma/prisma.service';
+import { AiService } from '../ai/ai.service';
 import {
   CreateWordDto,
   GetWordDto,
-  UpdateWordRepetitionDto
+  UpdateWordRepetitionDto,
+  TranslateWordResponseDto
 } from './dto';
 import { Prisma, Word } from '@prisma/client';
 
@@ -60,8 +62,21 @@ export class WordService {
   constructor(
     private prisma: PrismaService,
     private commandBus: CommandBus,
-    private queryBus: QueryBus
+    private queryBus: QueryBus,
+    private aiService: AiService
   ) {}
+
+  async translate(
+    text: string
+  ): Promise<TranslateWordResponseDto> {
+    const result = await this.aiService.processText(text);
+    const examples = Array.isArray(result.examples)
+      ? result.examples
+      : result.examples
+        ? [result.examples]
+        : [];
+    return { word: text, translation: result.translation, examples };
+  }
 
   /**
    * Отримання списку вивчених слів з пагінацією
@@ -225,12 +240,12 @@ export class WordService {
    */
   public async getWordCount(
     customerId: number,
-    needToLearn: boolean
+    needToLearn?: boolean
   ): Promise<number> {
     return await this.prisma.word.count({
       where: {
         customerId,
-        needToLearn
+        ...(needToLearn !== undefined && { needToLearn })
       }
     });
   }

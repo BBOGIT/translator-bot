@@ -6,6 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "mini-app:dev": "npm run start --prefix apps/mini-app",
+    "mini-app:build": "npm run build:prod --prefix apps/mini-app",
+    "mini-app:lint": "npm run lint --prefix apps/mini-app",
     "prisma:dev:deploy": "prisma migrate deploy",
     "db:dev:rm": "docker compose rm dev-db -s -f -v",
     "db:dev:up": "docker compose up dev-db -d",

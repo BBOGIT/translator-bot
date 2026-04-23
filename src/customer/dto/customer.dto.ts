@@ -94,9 +94,9 @@ export class CustomerResponseDto {
   @ApiPropertyOptional({ enum: ChannelEnum })
   channel?: ChannelEnum | null;
 
-  // Для масиву об'єктів Word, потрібно переконатися, що Word є типом,
-  // який Swagger може обробити, або створити WordDto
-  // Поки що припустимо, що Word з Prisma підходить, або це буде простий масив
+  @ApiPropertyOptional()
+  repetitionTime?: string | null;
+
   @ApiPropertyOptional({
     type: 'array',
     items: { type: 'object' }

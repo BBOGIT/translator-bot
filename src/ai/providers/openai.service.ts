@@ -38,7 +38,7 @@ export class OpenAIService
    */
   private createCacheKey(text: string): string {
     const hash = createHash('md5')
-      .update(text)
+      .update(`v2:${text}`)
       .digest('hex');
     return `ai:openai:text:${hash}`;
   }
@@ -74,7 +74,7 @@ export class OpenAIService
                   },
                   {
                     role: 'user',
-                    content: `Translate this English text to Ukrainian and provide usage examples: "${text}"`
+                    content: `Translate this English text to Ukrainian and provide 3 usage examples in English (not Ukrainian): "${text}"`
                   }
                 ];
               const apiStartTime = Date.now();
@@ -294,7 +294,11 @@ export class OpenAIService
               
               Use capture groups () to extract the main content. Make patterns flexible for similar message formats.
               The confidence should be between 0.0 and 1.0 based on how well the patterns will work.
-              IMPORTANT: For emoji-based patterns, do NOT hardcode specific emoji codepoints. Use a broad character class that includes the entire relevant Unicode block (e.g. all cat-face emoji [😸-😿], all emoticons [😀-😿]) so the pattern still matches when the channel uses a different emoji from the same category.`
+              IMPORTANT: For emoji-based patterns, do NOT hardcode specific emoji codepoints. Use a broad character class that includes the entire relevant Unicode block (e.g. all cat-face emoji [😸-😿], all emoticons [😀-😿]) so the pattern still matches when the channel uses a different emoji from the same category.
+
+              CRITICAL REQUIREMENTS:
+              - wordRegex: The word being taught can be a MULTI-WORD PHRASE (e.g. "beat it", "give up", "look after"). The capture group MUST use ([a-zA-Z]+(?:\\s+[a-zA-Z]+)*) to capture the full phrase — never just ([a-zA-Z]+) alone.
+              - examplesRegex: Create a pattern that matches ONE numbered example at a time (one entry from 1️⃣, 2️⃣, 3️⃣ etc.). The pattern will be applied with JavaScript matchAll() to find ALL examples. Use a lookahead to stop before the next example or end of string. Example base: ([0-9]️⃣[\\s\\S]*?)(?=\\n\\n[0-9]️⃣|\\s*$)`
                 },
                 {
                   role: 'user',
@@ -371,11 +375,11 @@ Create regex patterns to extract the word, translation, and examples from this m
       // Fallback patterns based on the example message format
       return {
         wordRegex:
-          '(?:😼|🔤)\\s*([a-zA-Z]+)\\s*-',
+          '([a-zA-Z]+(?:\\s+[a-zA-Z]+)*)\\s+-',
         translationRegex:
           '-\\s*([^\\n]+?)(?:\\n|$)',
         examplesRegex:
-          '([0-9]️⃣[\\s\\S]*?)(?:\\n\\n[A-Z]|$)',
+          '([0-9]️⃣[\\s\\S]*?)(?=\\n\\n[0-9]️⃣|\\s*$)',
         confidence: 0.3
       };
     }

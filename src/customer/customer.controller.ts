@@ -6,7 +6,6 @@ import {
   Body,
   Param,
   HttpStatus,
-  UseGuards
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -21,11 +20,9 @@ import {
   CustomerResponseDto
 } from './dto';
 import { Customer } from './types/customer.type';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Customers')
 @Controller('customers')
-@UseGuards(JwtAuthGuard)
 export class CustomerController {
   constructor(
     private readonly customerService: CustomerService
@@ -44,6 +41,7 @@ export class CustomerController {
       firstName: customer.firstName,
       lastName: customer.lastName,
       channel: customer.channel,
+      repetitionTime: customer.repetitionTime,
       words: customer.words,
       createdAt: customer.createdAt,
       updatedAt: customer.updatedAt

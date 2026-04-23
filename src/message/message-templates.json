@@ -3,7 +3,7 @@
         "name": "welcomeMessage",
         "description": "welcomeMessage",
         "channel": "telegram",
-        "body": "{\"text\":\"{{welcomeMessageText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{welcomeMessageText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{startButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"markdown\"}"
     },
     {
         "name": "mainMenu",
@@ -21,13 +21,13 @@
         "name": "waitingForWordInput",
         "description": "Запит на введення слова або фото з текстом",
         "channel": "telegram",
-        "body": "{\"text\":\"{{waitingForWordInputText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{waitingForWordInputText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "waitingForTranslation",
         "description": "waitingForTranslation",
         "channel": "telegram",
-        "body": "{\"text\":\"{{waitingForTranslationText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{waitingForTranslationText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "translation",
@@ -39,13 +39,13 @@
         "name": "unknownLanguage",
         "description": "unknownLanguage",
         "channel": "telegram",
-        "body": "{\"text\":\"{{unknownLanguageText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{unknownLanguageText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "savedWord",
         "description": "savedWord",
         "channel": "telegram",
-        "body": "{\"text\":\"{{savedWordText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{savedWordText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{addNewWordsButton}}\",\"callback_data\":\"/learnWords\"},{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "dataForSaving",
@@ -57,25 +57,25 @@
         "name": "savedWordError",
         "description": "savedWord",
         "channel": "telegram",
-        "body": "{\"text\":\"{{savedWordErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{savedWordErrorText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "textProcessingError",
         "description": "savedWord",
         "channel": "telegram",
-        "body": "{\"text\":\"{{textProcessingErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{textProcessingErrorText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "iknowWord",
         "description": "iknowWord",
         "channel": "telegram",
-        "body": "{\"text\":\"{{iknowWordText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{iknowWordText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "learnWord",
         "description": "learnWord - підтвердження що слово позначено для подальшого вивчення",
         "channel": "telegram",
-        "body": "{\"text\":\"{{learnWordText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{learnWordText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "repeatWords",
@@ -117,7 +117,7 @@
         "name": "notFoundWords",
         "description": "notFoundWords",
         "channel": "telegram",
-        "body": "{\"text\":\"{{notFoundWordsText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{notFoundWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "correctAnswer",
@@ -141,7 +141,7 @@
         "name": "notFoundCommand",
         "description": "notFoundCommand",
         "channel": "telegram",
-        "body": "{\"text\":\"{{notFoundCommandText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{notFoundCommandText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "okay",
@@ -189,13 +189,13 @@
         "name": "startRepetition",
         "description": "Повідомлення про початок повторення слів",
         "channel": "telegram",
-        "body": "{\"text\":\"{{startRepetitionText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{startRepetitionText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "repetitionError",
         "description": "Повідомлення про помилку при повторенні слів",
         "channel": "telegram",
-        "body": "{\"text\":\"{{repetitionErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{repetitionErrorText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "detailedProgress",
@@ -219,7 +219,7 @@
         "name": "repetitionTimeError",
         "description": "Помилка введення часу нагадувань",
         "channel": "telegram",
-        "body": "{\"text\":\"{{repetitionTimeErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{repetitionTimeErrorText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "repetitionPrompt",
@@ -243,30 +243,30 @@
         "name": "savedWordFromChannel",
         "description": "Слово сохранено из пересланного сообщения канала",
         "channel": "telegram",
-        "body": "{\"text\":\"{{savedWordFromChannelText}}\",\"chat_id\":\"{{chatId}}\",\"parse_mode\":\"markdown\"}"
+        "body": "{\"text\":\"{{savedWordFromChannelText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"markdown\"}"
     },
     {
         "name": "savedWordFromNewChannel",
         "description": "Слово сохранено из нового канала с созданной AI конфигурацией",
         "channel": "telegram",
-        "body": "{\"text\":\"{{savedWordFromNewChannelText}}\",\"chat_id\":\"{{chatId}}\",\"parse_mode\":\"markdown\"}"
+        "body": "{\"text\":\"{{savedWordFromNewChannelText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]},\"parse_mode\":\"markdown\"}"
     },
     {
         "name": "channelExtractionError",
         "description": "Ошибка при извлечении данных из сообщения канала",
         "channel": "telegram",
-        "body": "{\"text\":\"{{channelExtractionErrorText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{channelExtractionErrorText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "channelExtractionIncomplete",
         "description": "Не удалось извлечь полные данные из сообщения канала",
         "channel": "telegram",
-        "body": "{\"text\":\"{{channelExtractionIncompleteText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{channelExtractionIncompleteText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     },
     {
         "name": "wordAlreadyExists",
         "description": "Слово уже существует в базе данных",
         "channel": "telegram",
-        "body": "{\"text\":\"{{wordAlreadyExistsText}}\",\"chat_id\":\"{{chatId}}\"}"
+        "body": "{\"text\":\"{{wordAlreadyExistsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]]}}"
     }
 ]

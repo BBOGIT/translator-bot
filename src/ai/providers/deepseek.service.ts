@@ -11,8 +11,7 @@ import { AIProviderError } from '../../common/errors/domain-errors';
 
 @Injectable()
 export class DeepseekService
-  implements IAIProvider
-{
+  implements IAIProvider {
   private readonly logger = new Logger(
     DeepseekService.name
   );
@@ -33,12 +32,15 @@ export class DeepseekService
         [
           {
             role: 'system',
-            content:
-              'You are a translator assistant. Always respond in the following JSON format:\n{\n"translation": "Ukrainian translation of the text",\n"examples": ["example1", "example2", "example3"]\n}'
+            content: `You are a translator assistant. Always respond in the following JSON format: 
+                        { "extractedText": "The word in English",
+                          "translation": "Ukrainian translation of the text",
+                          "examples": ["example1 in English", "example2 in English", "example3 in English"]
+                        }`
           },
           {
             role: 'user',
-            content: `Translate this English text to Ukrainian and provide usage examples: "${text}"`
+            content: `Translate this English text to Ukrainian and provide 3 usage examples in English (not Ukrainian): "${text}"`
           }
         ];
 

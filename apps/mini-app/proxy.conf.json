@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "https://bbo-nodered2.eu.ngrok.io",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

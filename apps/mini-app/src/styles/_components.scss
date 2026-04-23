@@ -1,0 +1,93 @@
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 15.5px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { transform: scale(0.966); }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+.btn-primary   { background: var(--primary); color: #fff; }
+.btn-secondary { background: var(--primary-light); color: var(--primary); }
+.btn-outline   { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+.btn-success   { background: var(--success); color: #fff; }
+.btn-warn      { background: #FEF3C7; color: #D97706; }
+.btn-danger    { background: var(--danger); color: #fff; }
+.btn-sm        { padding: 10px 16px; font-size: 14px; }
+.btn-full      { width: 100%; }
+
+.skeleton {
+  background: linear-gradient(90deg, #EAECEF 0%, #DDE0E4 50%, #EAECEF 100%);
+  background-size: 200%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 8px;
+}
+
+.progress-bar-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badge-primary { background: var(--primary); color: #fff; }
+.badge-success { background: var(--success); color: #fff; }
+.badge-warning { background: var(--warning); color: #fff; }
+
+.screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  padding-bottom: calc(var(--nav-h) + 12px);
+}
+
+.screen-content {
+  padding: 0 16px;
+}
+
+.error-banner {
+  background: #FEE2E2;
+  color: #991B1B;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideUp 0.3s ease both;
+}

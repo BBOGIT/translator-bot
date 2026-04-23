@@ -166,9 +166,11 @@ export class ChannelExtractionService {
       const translationMatch = content.match(
         new RegExp(config.translationRegex, 'iu')
       );
-      const examplesMatch = content.match(
-        new RegExp(config.examplesRegex, 'isu')
-      );
+      const examplesMatches = [
+        ...content.matchAll(
+          new RegExp(config.examplesRegex, 'gisu')
+        )
+      ];
 
       if (!wordMatch || !translationMatch) {
         return {
@@ -189,11 +191,16 @@ export class ChannelExtractionService {
         translationMatch[1]?.trim() ||
         translationMatch[0]?.trim() ||
         '';
-      const examples = examplesMatch
-        ? examplesMatch[1]?.trim() ||
-          examplesMatch[0]?.trim() ||
-          ''
-        : '';
+      const examples =
+        examplesMatches.length > 0
+          ? examplesMatches
+              .map(
+                m =>
+                  m[1]?.trim() || m[0]?.trim()
+              )
+              .filter(Boolean)
+              .join('\n\n')
+          : '';
 
       // Очистка данных
       const cleanWord =
@@ -263,7 +270,7 @@ Use capture groups (parentheses) to extract the main content. Make patterns flex
     const fallbackPatterns: ExtractionPatterns = {
       wordRegex: '[😸-😿]\\s*([a-zA-Z]+(?:\\s+[a-zA-Z]+)*)',
       translationRegex: '-\\s*([^\\n]+)',
-      examplesRegex: '(\\d+⃣\\s*[^\\n]+\\n[^\\n]+)',
+      examplesRegex: '([0-9]️⃣[\\s\\S]*?)(?=\\n\\n[0-9]️⃣|\\s*$)',
       confidence: 0.3
     };
 

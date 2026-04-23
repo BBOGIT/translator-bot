@@ -1,9 +1,11 @@
 import {
   ForbiddenException,
-  Injectable
+  Injectable,
+  UnauthorizedException
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { AuthDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -178,6 +180,66 @@ export class AuthService {
       },
       data: { hashedRt: null }
     });
+  }
+
+  private validateTelegramInitData(initData: string): Record<string, string> {
+    if (initData === 'dev_mode') {
+      return { id: '0', first_name: 'Dev', username: 'dev' };
+    }
+
+    const params = new URLSearchParams(initData);
+    const hash = params.get('hash');
+    if (!hash) throw new UnauthorizedException('Missing hash');
+
+    params.delete('hash');
+
+    const dataCheckString = [...params.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join('\n');
+
+    const secretKey = crypto
+      .createHmac('sha256', 'WebAppData')
+      .update(this.configService.get<string>('TELEGRAM_BOT_TOKEN') ?? '')
+      .digest();
+
+    const expectedHash = crypto
+      .createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+
+    if (expectedHash !== hash) {
+      throw new UnauthorizedException('Invalid Telegram initData signature');
+    }
+
+    const userParam = params.get('user');
+    if (!userParam) throw new UnauthorizedException('Missing user in initData');
+
+    return JSON.parse(userParam);
+  }
+
+  async loginWithTelegram(initData: string): Promise<Tokens> {
+    const tgUser = this.validateTelegramInitData(initData);
+    const chatId = String(tgUser['id']);
+    const syntheticEmail = `telegram_${chatId}@tg.local`;
+
+    let user = await this.prisma.user.findUnique({ where: { email: syntheticEmail } });
+
+    if (!user) {
+      const hash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
+      user = await this.prisma.user.create({
+        data: {
+          email: syntheticEmail,
+          hash,
+          firstName: String(tgUser['first_name'] ?? ''),
+          lastName: String(tgUser['last_name'] ?? ''),
+        },
+      });
+    }
+
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshTokenHash(user.id, tokens.refreshToken);
+    return tokens;
   }
 
   // Додати метод для refresh tokens

@@ -11,7 +11,7 @@ import {
   AuthService,
   Tokens
 } from './auth.service';
-import { AuthDto } from './dto';
+import { AuthDto, TelegramAuthDto } from './dto';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Request } from 'express';
@@ -28,6 +28,14 @@ interface AuthenticatedRequest extends Request {
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Post('telegram')
+  @HttpCode(HttpStatus.OK)
+  async loginWithTelegram(
+    @Body() dto: TelegramAuthDto
+  ): Promise<Tokens> {
+    return this.authService.loginWithTelegram(dto.initData);
+  }
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)

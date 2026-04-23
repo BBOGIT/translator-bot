@@ -1,0 +1,315 @@
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { WordsActions } from '../../store/words/words.actions';
+import { selectRepetitionWords, selectWordsLoading } from '../../store/words/words.selectors';
+import { CustomerService } from '../../core/services/customer.service';
+import { TelegramService } from '../../core/services/telegram.service';
+import { IconsComponent } from '../../shared/components/icons/icons.component';
+import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
+import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
+import { Word } from '../../store/models';
+
+@Component({
+  selector: 'app-repeat',
+  standalone: true,
+  imports: [CommonModule, IconsComponent, BottomNavComponent, ScreenHdrComponent],
+  template: `
+    <div class="screen">
+      <app-screen-hdr title="Repeat Words" [showBack]="true" (back)="goHome()">
+        <span class="counter" *ngIf="!sessionDone()">{{ currentIndex() + 1 }}/{{ words().length }}</span>
+      </app-screen-hdr>
+
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="loading$ | async">
+        <div class="dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="!(loading$ | async) && words().length === 0">
+        <span class="empty-emoji">🎉</span>
+        <h3>All caught up!</h3>
+        <p>No words due for repetition today.</p>
+        <button class="btn btn-primary" (click)="goHome()">Back to Home</button>
+        <button class="btn btn-secondary" (click)="navigate('/practice')">Practice All Words →</button>
+      </div>
+
+      <!-- Session complete -->
+      <div class="session-done anim-scale-in" *ngIf="sessionDone() && words().length > 0">
+        <div class="done-circle">
+          <app-icon name="check" [size]="40" style="color:#fff"></app-icon>
+        </div>
+        <h2>Session Complete!</h2>
+        <p>You reviewed {{ words().length }} words</p>
+        <div class="done-stats">
+          <div class="done-stat">
+            <span class="done-num success">{{ learnedCount() }}</span>
+            <span class="done-label">Learned</span>
+          </div>
+          <div class="done-stat">
+            <span class="done-num warning">{{ practiceCount() }}</span>
+            <span class="done-label">Practice</span>
+          </div>
+        </div>
+        <div class="done-actions">
+          <button class="btn btn-primary btn-full" (click)="restart()">Practice Again</button>
+          <button class="btn btn-secondary btn-full" (click)="navigate('/schedule')">Set Schedule</button>
+        </div>
+      </div>
+
+      <!-- Flashcard -->
+      <div class="flashcard-area" *ngIf="!(loading$ | async) && !sessionDone() && words().length > 0">
+        <!-- Progress bar -->
+        <div class="progress-bar-track" style="margin:0 16px 16px">
+          <div class="progress-bar-fill" [style.width.%]="progressPercent()"></div>
+        </div>
+
+        <!-- Dots -->
+        <div class="progress-dots">
+          <span class="dot" *ngFor="let w of words(); let i = index"
+            [class.active]="i === currentIndex()"
+            [class.learned]="results[i] === 'learned'"
+            [class.practice]="results[i] === 'practice'">
+          </span>
+        </div>
+
+        <!-- Card -->
+        <div class="card-wrapper"
+             (touchstart)="onTouchStart($event)"
+             (touchend)="onTouchEnd($event)">
+          <div class="flashcard" [class.flipped]="flipped()" (click)="flip()">
+            <!-- Front -->
+            <div class="card-face front">
+              <span class="lang-tag">English</span>
+              <span class="word-big" [style.font-size]="wordFontSize()">{{ currentWord()!.word }}</span>
+              <span class="tap-hint">Tap to reveal</span>
+            </div>
+            <!-- Back -->
+            <div class="card-face back">
+              <span class="translation-big" [style.font-size]="translationFontSize()">{{ currentWord()!.translation }}</span>
+              <div class="examples-block" *ngIf="currentWord()?.examples?.length">
+                <div class="ex-item" *ngFor="let ex of currentWord()!.examples!.slice(0,2)">{{ ex }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons (after flip) -->
+        <div class="card-actions" *ngIf="flipped()">
+          <button class="btn btn-warn" (click)="markResult('practice')">
+            Need Practice
+          </button>
+          <button class="btn btn-success" (click)="markResult('learned')">
+            Learned ✓
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <app-bottom-nav></app-bottom-nav>
+  `,
+  styles: [`
+    .screen { padding-bottom: calc(var(--nav-h) + 16px); min-height: 100dvh; }
+    .counter { font-size: 14px; font-weight: 600; color: var(--text-2); }
+
+    .loading-state {
+      display: flex; justify-content: center; padding: 60px 0;
+      .dots { display: flex; gap: 8px; }
+      span {
+        width: 10px; height: 10px; border-radius: 50%; background: var(--primary);
+        animation: bounce 0.8s ease infinite;
+        &:nth-child(2) { animation-delay: 0.15s; }
+        &:nth-child(3) { animation-delay: 0.30s; }
+      }
+    }
+
+    .empty-state {
+      text-align: center; padding: 60px 24px; display: flex; flex-direction: column;
+      align-items: center; gap: 12px;
+      .empty-emoji { font-size: 56px; }
+      h3 { font-size: 20px; font-weight: 700; }
+      p { color: var(--text-2); }
+    }
+
+    .flashcard-area { padding: 16px; }
+
+    .progress-dots {
+      display: flex; justify-content: center; gap: 6px;
+      margin-bottom: 20px;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 4px;
+      background: var(--border); transition: all 0.3s var(--spring);
+      &.active   { width: 22px; background: var(--primary); }
+      &.learned  { background: var(--success); }
+      &.practice { background: var(--warning); }
+    }
+
+    .card-wrapper {
+      perspective: 1100px;
+      margin-bottom: 20px;
+      touch-action: pan-y;
+    }
+    .flashcard {
+      width: 100%; min-height: 280px; border-radius: var(--radius);
+      position: relative; transform-style: preserve-3d;
+      transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      &.flipped { transform: rotateY(180deg); }
+    }
+    .card-face {
+      position: absolute; inset: 0; border-radius: var(--radius);
+      backface-visibility: hidden; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 28px 24px;
+    }
+    .front {
+      background: var(--surface); box-shadow: var(--shadow);
+      gap: 16px;
+    }
+    .back {
+      background: linear-gradient(145deg, #2AABEE, #1578A8);
+      transform: rotateY(180deg); gap: 20px;
+    }
+    .lang-tag {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--primary); background: var(--primary-light); padding: 4px 12px; border-radius: 20px;
+    }
+    .word-big { font-size: 44px; font-weight: 800; color: var(--text); text-align: center; line-height: 1.2; transition: font-size 0.2s ease; }
+    .tap-hint { font-size: 13px; color: var(--text-3); }
+    .translation-big { font-size: 40px; font-weight: 700; color: #fff; text-align: center; line-height: 1.2; transition: font-size 0.2s ease; }
+    .examples-block {
+      background: rgba(255,255,255,0.15); border-radius: 12px; padding: 12px 16px;
+      width: 100%; display: flex; flex-direction: column; gap: 8px;
+    }
+    .ex-item { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; }
+
+    .card-actions {
+      display: flex; gap: 12px;
+      animation: slideUp 0.3s ease both;
+      .btn { flex: 1; }
+    }
+
+    .session-done {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 40px 24px; gap: 16px; text-align: center;
+    }
+    .done-circle {
+      width: 88px; height: 88px; border-radius: 50%;
+      background: linear-gradient(135deg, #22C55E, #16A34A);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(34,197,94,0.35);
+    }
+    .done-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+    .done-stat {
+      background: var(--surface); border-radius: var(--radius-sm); padding: 16px;
+      box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .done-num { font-size: 28px; font-weight: 800; }
+    .done-num.success { color: var(--success); }
+    .done-num.warning { color: var(--warning); }
+    .done-label { font-size: 12px; color: var(--text-2); }
+    .done-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  `]
+})
+export class RepeatComponent implements OnInit {
+  private store    = inject(Store);
+  private router   = inject(Router);
+  private customer = inject(CustomerService);
+  private telegram = inject(TelegramService);
+
+  loading$ = this.store.select(selectWordsLoading);
+  words    = signal<Word[]>([]);
+
+  currentIndex = signal(0);
+  flipped      = signal(false);
+  sessionDone  = signal(false);
+
+  results: Record<number, 'learned' | 'practice'> = {};
+
+  learnedCount  = computed(() => Object.values(this.results).filter(r => r === 'learned').length);
+  practiceCount = computed(() => Object.values(this.results).filter(r => r === 'practice').length);
+  progressPercent = computed(() => this.words().length
+    ? (this.currentIndex() / this.words().length) * 100 : 0);
+
+  currentWord = computed(() => this.words()[this.currentIndex()] ?? null);
+
+  wordFontSize = computed(() => {
+    const len = this.currentWord()?.word?.length ?? 0;
+    if (len < 15) return '44px';
+    if (len < 30) return '34px';
+    if (len < 50) return '26px';
+    return '20px';
+  });
+
+  translationFontSize = computed(() => {
+    const len = this.currentWord()?.translation?.length ?? 0;
+    if (len < 20) return '40px';
+    if (len < 50) return '30px';
+    if (len < 100) return '22px';
+    return '16px';
+  });
+
+  private touchStartX = 0;
+
+  ngOnInit() {
+    this.customer.load().subscribe(c => {
+      this.store.dispatch(WordsActions.loadRepetitionWords({ customerId: c.id }));
+    });
+    this.store.select(selectRepetitionWords).subscribe(words => {
+      this.words.set(words);
+    });
+  }
+
+  flip() {
+    if (!this.flipped()) {
+      this.flipped.set(true);
+      this.telegram.hapticImpact('light');
+    }
+  }
+
+  markResult(result: 'learned' | 'practice') {
+    const idx  = this.currentIndex();
+    const word = this.currentWord();
+    if (!word) return;
+
+    this.results[idx] = result;
+    this.store.dispatch(WordsActions.updateRepetition({
+      wordId: word.id,
+      success: result === 'learned'
+    }));
+    this.telegram.hapticImpact(result === 'learned' ? 'medium' : 'light');
+
+    this.flipped.set(false);
+    setTimeout(() => {
+      if (idx + 1 < this.words().length) {
+        this.currentIndex.set(idx + 1);
+      } else {
+        this.sessionDone.set(true);
+      }
+    }, 200);
+  }
+
+  onTouchStart(e: TouchEvent) {
+    this.touchStartX = e.touches[0].clientX;
+  }
+
+  onTouchEnd(e: TouchEvent) {
+    const diff = e.changedTouches[0].clientX - this.touchStartX;
+    if (Math.abs(diff) > 52 && this.flipped()) {
+      this.markResult(diff < 0 ? 'learned' : 'practice');
+    }
+  }
+
+  restart() {
+    this.currentIndex.set(0);
+    this.flipped.set(false);
+    this.sessionDone.set(false);
+    this.results = {};
+  }
+
+  navigate(path: string) { this.router.navigate([path]); }
+  goHome() { this.router.navigate(['/home']); }
+}
