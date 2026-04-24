@@ -7,24 +7,11 @@
 
 ---
 
-> ## ⚠️ ДЖЕРЕЛО ДИЗАЙНУ — ОБОВ'ЯЗКОВО ЧИТАТИ ПЕРЕД РЕАЛІЗАЦІЄЮ БУДЬ-ЯКОГО ЕКРАНУ
+> ## Дизайн-система
 >
-> Усі екрани, компоненти та стилі **треба забирати виключно з цього дизайн-файлу:**
->
-> **https://api.anthropic.com/v1/design/h/im0CzFsJGs8_5lzV4YiFrQ?open_file=index.html**
->
-> Алгоритм роботи з дизайном:
-> 1. Завантаж бандл (gzip tar): `curl <url> -o design.bin`
-> 2. Розпакуй: `gunzip -c design.bin | tar -xO translator-bot/project/index.html`
-> 3. Прочитай **чат** (`translator-bot/chats/chat1.md`) — там intent дизайнера
-> 4. Прочитай **`index.html`** повністю (CSS vars, анімації, layout)
-> 5. Прочитай **`components.jsx`** (BottomNav, ScreenHdr, Toggle, Skeleton, іконки)
-> 6. Прочитай **`screens1.jsx`** (Home, Learn, Repeat)
-> 7. Прочитай **`screens2.jsx`** (Schedule, Progress, Words, Settings)
-> 8. Реалізуй **pixel-perfect** — кольори, відступи, анімації, типографіку **точно як у прототипі**
->
-> Файли прототипу — це React/JSX, але **цільова технологія — Angular 18 standalone**.  
-> Відтворюй **візуальний результат**, не копіюй React-код.
+> Реалізований дизайн базується на стилях, описаних у розділі 2 цього документа.
+> Усі кольори, типографіка, анімації та компоненти визначені через CSS Custom Properties.
+> Цільова технологія реалізації — **Angular 18 standalone**.
 
 ---
 
@@ -36,10 +23,7 @@
 
 ---
 
-## 2. Design System (з Claude Design)
-
-> Джерело: `index.html` → `<style>` блок у дизайн-файлі  
-> **https://api.anthropic.com/v1/design/h/im0CzFsJGs8_5lzV4YiFrQ?open_file=index.html**
+## 2. Design System
 
 ### 2.1 Кольори
 
@@ -184,15 +168,9 @@ $gradients: (
 
 ---
 
-## 3. Екрани (7 screens з дизайну)
+## 3. Екрани (8 screens)
 
-> Джерело коду екранів:
-> - `screens1.jsx` → Home, Learn, Repeat (`HomeScreen`, `LearnScreen`, `RepeatScreen`)
-> - `screens2.jsx` → Schedule, Progress, Words, Settings (`ScheduleScreen`, `ProgressScreen`, `WordsScreen`, `SettingsScreen`)
-> - `components.jsx` → shared: `BottomNav`, `ScreenHdr`, `Toggle`, `SkeletonCard`, `Ic.*` іконки
->
-> Дизайн-файл: **https://api.anthropic.com/v1/design/h/im0CzFsJGs8_5lzV4YiFrQ?open_file=index.html**  
-> Розпакувати: `gunzip -c design.bin | tar -xO translator-bot/project/screens1.jsx`
+Shared компоненти: `BottomNav`, `ScreenHdr`, `Toggle`, `SkeletonCard`, іконки `Ic.*`
 
 ### Screen 1: Home
 - **Hero блок** з градієнтом `#2AABEE → #1578A8`
@@ -274,6 +252,13 @@ $gradients: (
 - **Quick links** card: Repetition Schedule / Learned Words rows з ChevR
 - Save button (primary, checkPulse при save)
 
+### Screen 8: Practice
+- Header "Practice Words" + лічильник слів
+- **Sticky search bar**: фільтрація по слову/перекладу
+- **Режим списку**: список слів із accordion — натиснути → перейти в режим картки
+- **Режим картки (flashcard)**: окреме слово з перекладом і прикладами, кнопки навігації
+- Вхідна анімація staggered slideUp
+
 ---
 
 ## 4. Монорепозиторій: структура
@@ -291,10 +276,15 @@ translator-bot/                          ← корінь монорепо
 │       │   ├── app/
 │       │   │   ├── core/                ← guards, interceptors, telegram service
 │       │   │   ├── features/
-│       │   │   │   ├── dictionary/      ← список слів, картка слова
-│       │   │   │   ├── repetition/      ← сесія повторення
-│       │   │   │   └── progress/        ← статистика
-│       │   │   └── shared/              ← UI компоненти, pipes
+│       │   │   │   ├── home/            ← дашборд
+│       │   │   │   ├── learn/           ← додати нове слово
+│       │   │   │   ├── repeat/          ← флешкарти повторення
+│       │   │   │   ├── practice/        ← тренування слів
+│       │   │   │   ├── progress/        ← статистика
+│       │   │   │   ├── words/           ← список вивчених слів
+│       │   │   │   ├── schedule/        ← налаштування розкладу
+│       │   │   │   └── settings/        ← налаштування
+│       │   │   └── shared/              ← UI компоненти (BottomNav, ScreenHdr, Toggle, Skeleton, Icons)
 │       │   ├── environments/
 │       │   └── styles/
 │       ├── angular.json
@@ -466,15 +456,18 @@ GET    /words/customer/:id/stats   ← зведена статистика (for 
 ### 7.2 Routing
 
 ```typescript
-// app.routes.ts
+// app.routes.ts (актуальний)
 export const routes: Routes = [
-  { path: '', redirectTo: 'menu', pathMatch: 'full' },
-  { path: 'menu', loadComponent: () => import('./features/menu/menu.component') },
-  { path: 'dictionary', loadComponent: () => import('./features/dictionary/dictionary.component') },
-  { path: 'dictionary/:wordId', loadComponent: () => import('./features/dictionary/word-card.component') },
-  { path: 'add-word', loadComponent: () => import('./features/dictionary/add-word.component') },
-  { path: 'repetition', loadComponent: () => import('./features/repetition/repetition.component') },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home',     loadComponent: () => import('./features/home/home.component') },
+  { path: 'learn',    loadComponent: () => import('./features/learn/learn.component') },
+  { path: 'repeat',   loadComponent: () => import('./features/repeat/repeat.component') },
+  { path: 'schedule', loadComponent: () => import('./features/schedule/schedule.component') },
   { path: 'progress', loadComponent: () => import('./features/progress/progress.component') },
+  { path: 'words',    loadComponent: () => import('./features/words/words.component') },
+  { path: 'settings', loadComponent: () => import('./features/settings/settings.component') },
+  { path: 'practice', loadComponent: () => import('./features/practice/practice.component') },
+  { path: '**', redirectTo: 'home' },
 ];
 ```
 

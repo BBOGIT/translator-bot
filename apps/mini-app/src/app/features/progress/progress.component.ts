@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
@@ -6,6 +6,7 @@ import { IconsComponent } from '../../shared/components/icons/icons.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { WordsApiService } from '../../core/api/words.api';
 import { CustomerService } from '../../core/services/customer.service';
+import { animateCount } from '../../shared/utils/count-up';
 
 interface Stats {
   total: number;
@@ -46,7 +47,7 @@ interface Stats {
               style="transition: stroke-dashoffset 1.4s ease"/>
           </svg>
           <div class="ring-center">
-            <span class="ring-pct">{{ completedPct() }}%</span>
+            <span class="ring-pct">{{ displayPct() }}%</span>
             <span class="ring-label">completed</span>
           </div>
         </div>
@@ -58,21 +59,21 @@ interface Stats {
               <app-icon name="book" [size]="16" class="icon-blue"></app-icon>
               <span class="metric-label">Words Learned</span>
             </div>
-            <span class="metric-num blue">{{ stats.learned }}</span>
+            <span class="metric-num blue">{{ displayLearned() }}</span>
           </div>
           <div class="metric-card card">
             <div class="metric-header">
               <app-icon name="flame" [size]="16" class="icon-orange"></app-icon>
               <span class="metric-label">Streak Days</span>
             </div>
-            <span class="metric-num orange">{{ stats.streak }}</span>
+            <span class="metric-num orange">{{ displayStreak() }}</span>
           </div>
           <div class="metric-card card" style="grid-column: span 2">
             <div class="metric-header">
               <app-icon name="clock" [size]="16" class="icon-yellow"></app-icon>
               <span class="metric-label">Due Today</span>
             </div>
-            <span class="metric-num yellow">{{ stats.dueToday }}</span>
+            <span class="metric-num yellow">{{ displayDueToday() }}</span>
           </div>
         </div>
 
@@ -159,8 +160,12 @@ export class ProgressComponent implements OnInit {
 
   stats: Stats = { total: 0, learned: 0, dueToday: 0, streak: 0, weeklyActivity: [0,0,0,0,0,0,0] };
 
-  completedPct = signal(0);
-  dashOffset   = signal(this.circumference);
+  completedPct    = signal(0);
+  dashOffset      = signal(this.circumference);
+  displayPct      = signal(0);
+  displayLearned  = signal(0);
+  displayStreak   = signal(0);
+  displayDueToday = signal(0);
 
   ngOnInit() {
     this.customer.load().subscribe(c => {
@@ -171,6 +176,10 @@ export class ProgressComponent implements OnInit {
         setTimeout(() => {
           this.completedPct.set(pct);
           this.dashOffset.set(this.circumference * (1 - pct / 100));
+          animateCount(this.stats.learned,  900,  v => this.displayLearned.set(v));
+          animateCount(this.stats.streak,   900,  v => this.displayStreak.set(v));
+          animateCount(this.stats.dueToday, 900,  v => this.displayDueToday.set(v));
+          animateCount(pct,                 1300, v => this.displayPct.set(v));
         }, 200);
       });
     });

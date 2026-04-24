@@ -6,6 +6,7 @@ import { CustomerService } from '../../core/services/customer.service';
 import { WordsApiService } from '../../core/api/words.api';
 import { IconsComponent } from '../../shared/components/icons/icons.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
+import { animateCount } from '../../shared/utils/count-up';
 
 interface Stats {
   total: number;
@@ -27,23 +28,23 @@ interface Stats {
           </div>
           <div class="streak-badge">
             <app-icon name="flame" [size]="16" style="color:#FBBF24"></app-icon>
-            <span class="streak-num">{{ streak }}</span>
+            <span class="streak-num">{{ displayStreak }}</span>
             <span class="streak-label">day streak</span>
           </div>
         </div>
         <div class="stats-bar">
           <div class="stat-col">
-            <span class="stat-num">{{ stats.total }}</span>
+            <span class="stat-num">{{ displayTotal }}</span>
             <span class="stat-label">Total</span>
           </div>
           <div class="divider"></div>
           <div class="stat-col">
-            <span class="stat-num">{{ stats.learned }}</span>
+            <span class="stat-num">{{ displayLearned }}</span>
             <span class="stat-label">Learned</span>
           </div>
           <div class="divider"></div>
           <div class="stat-col">
-            <span class="stat-num">{{ stats.dueToday }}</span>
+            <span class="stat-num">{{ displayDueToday }}</span>
             <span class="stat-label">Due Today</span>
           </div>
         </div>
@@ -165,12 +166,21 @@ export class HomeComponent implements OnInit {
   stats: Stats = { total: 0, learned: 0, dueToday: 0 };
   pressed = '';
 
+  displayTotal    = 0;
+  displayLearned  = 0;
+  displayDueToday = 0;
+  displayStreak   = 0;
+
   ngOnInit() {
     this.customer.load().subscribe(c => {
       this.streak = c.streak ?? 0;
       const id = c.id;
       this.wordsApi.getWordCount(id).subscribe(s => {
         this.stats = s;
+        animateCount(c.streak ?? 0, 800,  v => this.displayStreak   = v);
+        animateCount(s.total,       900,  v => this.displayTotal    = v);
+        animateCount(s.learned,     900,  v => this.displayLearned  = v);
+        animateCount(s.dueToday,    900,  v => this.displayDueToday = v);
       });
     });
   }
