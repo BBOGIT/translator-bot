@@ -176,7 +176,7 @@ export class ChannelExtractionService {
         return {
           word: '',
           translation: '',
-          examples: '',
+          examples: [],
           success: false,
           error:
             'Could not extract word or translation using current patterns'
@@ -199,8 +199,7 @@ export class ChannelExtractionService {
                   m[1]?.trim() || m[0]?.trim()
               )
               .filter(Boolean)
-              .join('\n\n')
-          : '';
+          : [];
 
       // Очистка данных
       const cleanWord =
@@ -227,7 +226,7 @@ export class ChannelExtractionService {
       return {
         word: '',
         translation: '',
-        examples: '',
+        examples: [],
         success: false,
         error: `Regex extraction failed: ${error.message}`
       };
@@ -376,9 +375,9 @@ Use capture groups (parentheses) to extract the main content. Make patterns flex
    * Очистка извлеченных примеров
    */
   private cleanExtractedExamples(
-    examples: string
-  ): string {
-    return examples.trim();
+    examples: string[]
+  ): string[] {
+    return examples.map(e => e.trim()).filter(Boolean);
   }
 
   /**

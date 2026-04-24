@@ -25,9 +25,37 @@ export class CustomerService {
   async find(
     dto: CustomerFindDto
   ): Promise<Customer | null> {
-    return await this.customerRepository.find(
-      dto.chatId
-    );
+    const customer = await this.customerRepository.find(dto.chatId);
+    if (!customer) return null;
+    return this.refreshStreak(customer);
+  }
+
+  private async refreshStreak(customer: Customer): Promise<Customer> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastActive = customer.lastActiveDate
+      ? new Date(customer.lastActiveDate)
+      : null;
+    if (lastActive) lastActive.setHours(0, 0, 0, 0);
+
+    const alreadyCountedToday =
+      lastActive && lastActive.getTime() === today.getTime();
+    if (alreadyCountedToday) return customer;
+
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const wasYesterday =
+      lastActive && lastActive.getTime() === yesterday.getTime();
+
+    const newStreak = wasYesterday ? customer.streak + 1 : 1;
+
+    return this.customerRepository.update({
+      chatId: customer.chatId,
+      streak: newStreak,
+      lastActiveDate: today,
+    });
   }
 
   async findByChatId(

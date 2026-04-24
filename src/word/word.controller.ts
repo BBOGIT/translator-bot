@@ -22,7 +22,8 @@ import {
   PaginatedWordsResponseDto,
   UpdateWordDto,
   TranslateWordDto,
-  TranslateWordResponseDto
+  TranslateWordResponseDto,
+  TranslateImageDto,
 } from './dto';
 import {
   ApiTags,
@@ -56,9 +57,15 @@ export class WordController {
       translation: wordData.translation,
       examples:
         typeof wordData.examples === 'string'
-          ? [wordData.examples]
-          : (wordData.examples as string[]) ||
-            undefined,
+          ? (() => {
+              try {
+                const parsed = JSON.parse(wordData.examples);
+                return Array.isArray(parsed) ? parsed : [wordData.examples];
+              } catch {
+                return [wordData.examples];
+              }
+            })()
+          : (wordData.examples as string[]) || undefined,
       needToLearn: wordData.needToLearn,
       repeatCount: (wordData as any).repeatCount,
       lastRepeatAt: (wordData as any)
@@ -98,6 +105,19 @@ export class WordController {
     @Body() dto: TranslateWordDto
   ): Promise<TranslateWordResponseDto> {
     return this.wordService.translate(dto.text);
+  }
+
+  @Post('translate-image')
+  @ApiOperation({ summary: 'Extract and translate word from image using AI' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Translation result from image.',
+    type: TranslateWordResponseDto
+  })
+  async translateImage(
+    @Body() dto: TranslateImageDto
+  ): Promise<TranslateWordResponseDto> {
+    return this.wordService.translateImage(dto.image);
   }
 
   @Post()

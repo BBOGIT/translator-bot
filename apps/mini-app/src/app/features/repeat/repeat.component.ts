@@ -92,8 +92,11 @@ import { Word } from '../../store/models';
             <div class="card-face back">
               <span class="translation-big" [style.font-size]="translationFontSize()">{{ currentWord()!.translation }}</span>
               <div class="examples-block" *ngIf="currentWord()?.examples?.length">
-                <div class="ex-item" *ngFor="let ex of currentWord()!.examples!.slice(0,2)">{{ ex }}</div>
+                <div class="ex-item" *ngFor="let ex of currentWord()!.examples!.slice(0,2)">
+                  <span class="ex-bullet">·</span> {{ ex }}
+                </div>
               </div>
+              <span class="tap-hint tap-hint-back">Tap to flip back</span>
             </div>
           </div>
         </div>
@@ -134,6 +137,7 @@ import { Word } from '../../store/models';
       .empty-emoji { font-size: 56px; }
       h3 { font-size: 20px; font-weight: 700; }
       p { color: var(--text-2); }
+      .btn { width: 100%; }
     }
 
     .flashcard-area { padding: 16px; }
@@ -156,7 +160,7 @@ import { Word } from '../../store/models';
       touch-action: pan-y;
     }
     .flashcard {
-      width: 100%; min-height: 280px; border-radius: var(--radius);
+      width: 100%; min-height: clamp(300px, 52dvh, 480px); border-radius: var(--radius);
       position: relative; transform-style: preserve-3d;
       transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
@@ -165,7 +169,8 @@ import { Word } from '../../store/models';
     .card-face {
       position: absolute; inset: 0; border-radius: var(--radius);
       backface-visibility: hidden; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; padding: 28px 24px;
+      align-items: center; justify-content: center; padding: 24px 20px;
+      overflow-y: auto;
     }
     .front {
       background: var(--surface); box-shadow: var(--shadow);
@@ -173,7 +178,8 @@ import { Word } from '../../store/models';
     }
     .back {
       background: linear-gradient(145deg, #2AABEE, #1578A8);
-      transform: rotateY(180deg); gap: 20px;
+      transform: rotateY(180deg); gap: 12px;
+      justify-content: flex-start; padding-top: 28px;
     }
     .lang-tag {
       font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
@@ -181,12 +187,14 @@ import { Word } from '../../store/models';
     }
     .word-big { font-size: 44px; font-weight: 800; color: var(--text); text-align: center; line-height: 1.2; transition: font-size 0.2s ease; }
     .tap-hint { font-size: 13px; color: var(--text-3); }
-    .translation-big { font-size: 40px; font-weight: 700; color: #fff; text-align: center; line-height: 1.2; transition: font-size 0.2s ease; }
+    .translation-big { font-size: 40px; font-weight: 700; color: #fff; text-align: center; line-height: 1.3; transition: font-size 0.2s ease; word-break: break-word; overflow-wrap: break-word; width: 100%; }
     .examples-block {
       background: rgba(255,255,255,0.15); border-radius: 12px; padding: 12px 16px;
       width: 100%; display: flex; flex-direction: column; gap: 8px;
     }
-    .ex-item { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; }
+    .ex-item { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; display: flex; gap: 6px; align-items: flex-start; }
+    .ex-bullet { font-size: 16px; line-height: 1.3; opacity: 0.7; flex-shrink: 0; }
+    .tap-hint-back { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px; }
 
     .card-actions {
       display: flex; gap: 12px;
@@ -249,10 +257,11 @@ export class RepeatComponent implements OnInit {
 
   translationFontSize = computed(() => {
     const len = this.currentWord()?.translation?.length ?? 0;
-    if (len < 20) return '40px';
-    if (len < 50) return '30px';
-    if (len < 100) return '22px';
-    return '16px';
+    if (len < 20) return '34px';
+    if (len < 40) return '26px';
+    if (len < 70) return '20px';
+    if (len < 120) return '16px';
+    return '13px';
   });
 
   private touchStartX = 0;
@@ -267,10 +276,8 @@ export class RepeatComponent implements OnInit {
   }
 
   flip() {
-    if (!this.flipped()) {
-      this.flipped.set(true);
-      this.telegram.hapticImpact('light');
-    }
+    this.flipped.update(v => !v);
+    this.telegram.hapticImpact('light');
   }
 
   markResult(result: 'learned' | 'practice') {

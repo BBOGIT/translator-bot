@@ -70,7 +70,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
               <app-icon [name]="expanded[w.id] ? 'chev-u' : 'chev-d'" [size]="16" style="color:var(--text-3);flex-shrink:0"></app-icon>
             </div>
             <div class="examples-block" *ngIf="expanded[w.id] && w.examples?.length">
-              <div class="ex-item" *ngFor="let ex of w.examples!.slice(0,2)">{{ ex }}</div>
+              <div class="ex-item" *ngFor="let ex of w.examples">{{ ex }}</div>
             </div>
           </div>
         </div>
@@ -173,8 +173,12 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
     .word-col { flex: 1; min-width: 0; }
     .word-text  { font-size: 15px; font-weight: 700; color: var(--text); display: block; }
     .word-trans { font-size: 13px; color: var(--text-2); margin-top: 2px; display: block; }
-    .examples-block { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
-    .ex-item { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+    .examples-block { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+    .ex-item {
+      font-size: 13px; color: var(--text-2); line-height: 1.5;
+      border-left: 3px solid var(--primary); padding: 8px 10px;
+      background: var(--bg); border-radius: 0 9px 9px 0;
+    }
     .start-wrap { position: fixed; bottom: calc(var(--nav-h) + 12px); left: 0; right: 0; padding: 0 16px; }
     .start-btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
     .empty-state {

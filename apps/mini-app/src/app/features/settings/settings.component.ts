@@ -7,13 +7,14 @@ import { ToggleComponent } from '../../shared/components/toggle/toggle.component
 import { CustomerService } from '../../core/services/customer.service';
 import { TelegramService } from '../../core/services/telegram.service';
 import { ScheduleSheetComponent } from '../../shared/components/schedule-sheet/schedule-sheet.component';
+import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ScreenHdrComponent, IconsComponent, ToggleComponent, ScheduleSheetComponent],
+  imports: [CommonModule, ScreenHdrComponent, IconsComponent, ToggleComponent, ScheduleSheetComponent, BottomNavComponent],
   template: `
-    <div class="screen no-bottom-nav">
+    <div class="screen">
       <app-screen-hdr title="Settings" [showBack]="true" (back)="goBack()"></app-screen-hdr>
 
       <div class="screen-content" style="padding-top:16px">
@@ -47,14 +48,6 @@ import { ScheduleSheetComponent } from '../../shared/components/schedule-sheet/s
             <span class="link-label">Repetition Schedule</span>
             <app-icon name="chev-r" [size]="16" style="color:var(--text-3)"></app-icon>
           </div>
-          <div class="link-divider"></div>
-          <div class="link-row" (click)="navigate('/words')">
-            <div class="link-icon green">
-              <app-icon name="book-open" [size]="18" style="color:#fff"></app-icon>
-            </div>
-            <span class="link-label">Learned Words</span>
-            <app-icon name="chev-r" [size]="16" style="color:var(--text-3)"></app-icon>
-          </div>
         </div>
 
         <button class="btn btn-primary btn-full anim-slide-up d3"
@@ -65,9 +58,9 @@ import { ScheduleSheetComponent } from '../../shared/components/schedule-sheet/s
     </div>
 
     <app-schedule-sheet [open]="scheduleOpen()" (closed)="onSheetClosed()"></app-schedule-sheet>
+    <app-bottom-nav></app-bottom-nav>
   `,
   styles: [`
-    .no-bottom-nav { padding-bottom: 24px; }
     .screen-content { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 
     .time-card { padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -92,13 +85,11 @@ import { ScheduleSheetComponent } from '../../shared/components/schedule-sheet/s
       cursor: pointer; transition: background 0.15s ease;
       &:active { background: var(--bg); }
     }
-    .link-divider { height: 1px; background: var(--border); margin: 0 16px; }
     .link-icon {
       width: 36px; height: 36px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
     }
-    .link-icon.blue  { background: linear-gradient(135deg, #2AABEE, #1A96D9); }
-    .link-icon.green { background: linear-gradient(135deg, #10B981, #059669); }
+    .link-icon.blue { background: linear-gradient(135deg, #2AABEE, #1A96D9); }
     .link-label { flex: 1; font-size: 15px; font-weight: 600; color: var(--text); }
 
     .btn.pulse { animation: checkPulse 0.4s ease both; }
@@ -149,6 +140,5 @@ export class SettingsComponent implements OnInit {
     if (c?.repetitionTime) this.reminderTime.set(c.repetitionTime);
   }
 
-  navigate(path: string) { this.router.navigate([path]); }
   goBack() { this.router.navigate(['/progress']); }
 }

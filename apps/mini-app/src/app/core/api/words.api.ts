@@ -90,6 +90,10 @@ export class WordsApiService {
     return this.http.post<Word>(`${this.base}/translate`, { text });
   }
 
+  translateImage(base64: string): Observable<Word> {
+    return this.http.post<Word>(`${this.base}/translate-image`, { image: base64 });
+  }
+
   createWord(word: Omit<Word, 'id' | 'createdAt'>): Observable<Word> {
     return this.http.post<Word>(this.base, word);
   }

@@ -42,6 +42,7 @@ export class CustomerController {
       lastName: customer.lastName,
       channel: customer.channel,
       repetitionTime: customer.repetitionTime,
+      streak: customer.streak,
       words: customer.words,
       createdAt: customer.createdAt,
       updatedAt: customer.updatedAt

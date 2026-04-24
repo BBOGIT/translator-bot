@@ -37,6 +37,8 @@ model Customer {
   channel String?
   repetitionTime       String?
   notificationsEnabled Boolean @default(true)
+  streak               Int     @default(0)
+  lastActiveDate       DateTime?
   Word      Word[]
 
   @@index([state])

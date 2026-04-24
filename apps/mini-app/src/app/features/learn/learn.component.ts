@@ -31,8 +31,9 @@ import { CustomerService } from '../../core/services/customer.service';
         <div class="input-card card" [class.shake]="shaking()">
           <label class="input-label">ENGLISH WORD OR PHRASE</label>
           <textarea #textInput class="word-input" [(ngModel)]="inputText" placeholder="e.g. serendipity" rows="2" (input)="autoResize($event)"></textarea>
+          <input #fileInput type="file" accept="image/*" style="display:none" (change)="onFileSelected($event)">
           <div class="input-actions">
-            <button class="btn btn-outline btn-sm" (click)="openCamera()">
+            <button class="btn btn-outline btn-sm" (click)="fileInput.click()">
               <app-icon name="camera" [size]="16"></app-icon>
               Photo
             </button>
@@ -176,8 +177,15 @@ export class LearnComponent {
     this.inputText = '';
   }
 
-  openCamera() {
-    /* camera integration placeholder */
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      this.store.dispatch(WordsActions.translateFromImage({ base64 }));
+    };
+    reader.readAsDataURL(file);
   }
 
   autoResize(event: Event) {

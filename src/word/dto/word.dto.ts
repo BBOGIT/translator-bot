@@ -20,6 +20,12 @@ export class TranslateWordResponseDto {
   examples: string[];
 }
 
+export class TranslateImageDto {
+  @IsString()
+  @IsNotEmpty()
+  image: string;
+}
+
 export class CreateWordDto {
   @IsString()
   @IsNotEmpty()

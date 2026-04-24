@@ -10,7 +10,7 @@ export interface ExtractionPatterns {
 export interface ExtractedContent {
   word: string;
   translation: string;
-  examples: string;
+  examples: string[];
   success: boolean;
   error?: string;
 }

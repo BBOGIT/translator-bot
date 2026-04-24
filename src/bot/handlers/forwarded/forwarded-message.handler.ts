@@ -161,7 +161,7 @@ export class ForwardedMessageHandler
               channelInfo.title ||
               channelInfo.username ||
               'Unknown Channel',
-            examples: extractedContent.examples
+            examples: extractedContent.examples.join('\n\n')
           }
         });
       } catch (error) {

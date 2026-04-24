@@ -27,6 +27,8 @@ export class CustomerMapper {
         prismaCustomer.repetitionTime,
       notificationsEnabled:
         prismaCustomer.notificationsEnabled,
+      streak: prismaCustomer.streak,
+      lastActiveDate: prismaCustomer.lastActiveDate,
       createdAt: prismaCustomer.createdAt,
       updatedAt: prismaCustomer.updatedAt,
       words: prismaCustomer.Word

@@ -20,6 +20,9 @@ export const WordsActions = createActionGroup({
     'Translate Word Success': props<{ word: Word }>(),
     'Translate Word Failure': props<{ error: string }>(),
 
+    'Translate From Image':         props<{ base64: string }>(),
+    'Translate From Image Failure': props<{ error: string }>(),
+
     'Save Word':         props<{ word: Omit<Word, 'id' | 'createdAt'> }>(),
     'Save Word Success': props<{ word: Word }>(),
     'Save Word Failure': props<{ error: string }>(),

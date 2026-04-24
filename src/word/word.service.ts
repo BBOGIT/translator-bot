@@ -78,6 +78,17 @@ export class WordService {
     return { word: text, translation: result.translation, examples };
   }
 
+  async translateImage(base64: string): Promise<TranslateWordResponseDto> {
+    const buffer = Buffer.from(base64, 'base64');
+    const result = await this.aiService.processImage(buffer);
+    const examples = Array.isArray(result.examples)
+      ? result.examples
+      : result.examples
+        ? [result.examples]
+        : [];
+    return { word: result.extractedText ?? '', translation: result.translation, examples };
+  }
+
   /**
    * Отримання списку вивчених слів з пагінацією
    */

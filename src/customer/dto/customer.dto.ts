@@ -1,11 +1,14 @@
 // dto/customer.dto.ts
 import {
   IsBoolean,
+  IsDate,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import {
   ChannelEnum,
   CustomerState
@@ -72,6 +75,17 @@ export class CustomerUpdateDto {
   @IsBoolean()
   @IsOptional()
   notificationsEnabled?: boolean;
+
+  @ApiPropertyOptional()
+  @IsInt()
+  @IsOptional()
+  streak?: number;
+
+  @ApiPropertyOptional()
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  lastActiveDate?: Date;
 }
 
 export class CustomerFindDto {
@@ -102,6 +116,9 @@ export class CustomerResponseDto {
 
   @ApiPropertyOptional()
   repetitionTime?: string | null;
+
+  @ApiPropertyOptional()
+  streak?: number;
 
   @ApiPropertyOptional({
     type: 'array',

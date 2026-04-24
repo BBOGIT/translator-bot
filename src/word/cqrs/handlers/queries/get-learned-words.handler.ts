@@ -60,6 +60,7 @@ export class GetLearnedWordsHandler
               id: true,
               word: true,
               translation: true,
+              examples: true,
               updatedAt: true
             }
           });
@@ -77,6 +78,7 @@ export class GetLearnedWordsHandler
           | 'id'
           | 'word'
           | 'translation'
+          | 'examples'
           | 'updatedAt'
         >[] = wordsData;
 

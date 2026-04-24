@@ -58,6 +58,18 @@ export class WordsEffects {
     )
   );
 
+  translateFromImage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(WordsActions.translateFromImage),
+      switchMap(({ base64 }) =>
+        this.api.translateImage(base64).pipe(
+          map(word => WordsActions.translateWordSuccess({ word })),
+          catchError(err => of(WordsActions.translateFromImageFailure({ error: err.message })))
+        )
+      )
+    )
+  );
+
   saveWord$ = createEffect(() =>
     this.actions$.pipe(
       ofType(WordsActions.saveWord),

@@ -45,9 +45,12 @@ export const wordsReducer = createReducer(
     ({ ...s, loading: false, error })),
 
   on(WordsActions.translateWord, s => ({ ...s, translating: true, translation: null, error: null })),
+  on(WordsActions.translateFromImage, s => ({ ...s, translating: true, translation: null, error: null })),
   on(WordsActions.translateWordSuccess, (s, { word }) =>
     ({ ...s, translating: false, translation: word })),
   on(WordsActions.translateWordFailure, (s, { error }) =>
+    ({ ...s, translating: false, error })),
+  on(WordsActions.translateFromImageFailure, (s, { error }) =>
     ({ ...s, translating: false, error })),
 
   on(WordsActions.saveWord, s => ({ ...s, loading: true })),

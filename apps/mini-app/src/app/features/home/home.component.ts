@@ -24,7 +24,7 @@ interface Stats {
       <div class="hero anim-slide-up">
         <div class="hero-top">
           <div class="greeting">
-            <span class="hello">Good morning, {{ firstName }} 👋</span>
+            <span class="hello">{{ greeting }}, {{ firstName }} 👋</span>
           </div>
           <div class="streak-badge">
             <app-icon name="flame" [size]="16" style="color:#FBBF24"></app-icon>
@@ -158,6 +158,7 @@ export class HomeComponent implements OnInit {
   private wordsApi = inject(WordsApiService);
 
   firstName = this.telegram.user?.first_name ?? 'there';
+  greeting = this.getGreeting();
   streak = 0;
   stats: Stats = { total: 0, learned: 0, dueToday: 0 };
   loaded = false;
@@ -182,4 +183,12 @@ export class HomeComponent implements OnInit {
   }
 
   navigate(path: string) { this.router.navigate([path]); }
+
+  private getGreeting(): string {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return 'Good morning';
+    if (h >= 12 && h < 17) return 'Good afternoon';
+    if (h >= 17 && h < 22) return 'Good evening';
+    return 'Good night';
+  }
 }
