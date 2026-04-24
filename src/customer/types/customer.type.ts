@@ -12,6 +12,7 @@ export type Customer = {
   lastName: string | null;
   channel: ChannelEnum | null;
   repetitionTime: string | null;
+  notificationsEnabled: boolean;
   createdAt: Date;
   updatedAt: Date;
   words?: Word[];

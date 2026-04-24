@@ -15,10 +15,6 @@ export const routes: Routes = [
     loadComponent: () => import('./features/repeat/repeat.component').then(m => m.RepeatComponent)
   },
   {
-    path: 'schedule',
-    loadComponent: () => import('./features/schedule/schedule.component').then(m => m.ScheduleComponent)
-  },
-  {
     path: 'progress',
     loadComponent: () => import('./features/progress/progress.component').then(m => m.ProgressComponent)
   },

@@ -35,7 +35,8 @@ model Customer {
   firstName String?
   lastName  String?
   channel String?
-  repetitionTime String?
+  repetitionTime       String?
+  notificationsEnabled Boolean @default(true)
   Word      Word[]
 
   @@index([state])

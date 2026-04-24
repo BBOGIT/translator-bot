@@ -1,5 +1,6 @@
 // dto/customer.dto.ts
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -47,10 +48,10 @@ export class CustomerUpdateDto {
   @IsOptional()
   state?: CustomerState;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
-  chatId: string;
+  @IsOptional()
+  chatId?: string;
 
   @ApiPropertyOptional()
   @IsString()
@@ -66,6 +67,11 @@ export class CustomerUpdateDto {
   @IsString()
   @IsOptional()
   repetitionTime?: string;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  notificationsEnabled?: boolean;
 }
 
 export class CustomerFindDto {

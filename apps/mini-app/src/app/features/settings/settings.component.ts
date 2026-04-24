@@ -6,11 +6,12 @@ import { IconsComponent } from '../../shared/components/icons/icons.component';
 import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
 import { CustomerService } from '../../core/services/customer.service';
 import { TelegramService } from '../../core/services/telegram.service';
+import { ScheduleSheetComponent } from '../../shared/components/schedule-sheet/schedule-sheet.component';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ScreenHdrComponent, IconsComponent, ToggleComponent],
+  imports: [CommonModule, ScreenHdrComponent, IconsComponent, ToggleComponent, ScheduleSheetComponent],
   template: `
     <div class="screen no-bottom-nav">
       <app-screen-hdr title="Settings" [showBack]="true" (back)="goBack()"></app-screen-hdr>
@@ -39,7 +40,7 @@ import { TelegramService } from '../../core/services/telegram.service';
 
         <!-- Quick links -->
         <div class="links-card card anim-slide-up d2">
-          <div class="link-row" (click)="navigate('/schedule')">
+          <div class="link-row" (click)="scheduleOpen.set(true)">
             <div class="link-icon blue">
               <app-icon name="clock" [size]="18" style="color:#fff"></app-icon>
             </div>
@@ -62,6 +63,8 @@ import { TelegramService } from '../../core/services/telegram.service';
         </button>
       </div>
     </div>
+
+    <app-schedule-sheet [open]="scheduleOpen()" (closed)="onSheetClosed()"></app-schedule-sheet>
   `,
   styles: [`
     .no-bottom-nav { padding-bottom: 24px; }
@@ -109,6 +112,7 @@ export class SettingsComponent implements OnInit {
   reminderTime    = signal('20:00');
   notificationsOn = signal(true);
   saved           = signal(false);
+  scheduleOpen    = signal(false);
 
   ngOnInit() {
     const c = this.customer.customer();
@@ -137,6 +141,12 @@ export class SettingsComponent implements OnInit {
       this.telegram.hapticNotification('success');
       setTimeout(() => this.saved.set(false), 1500);
     });
+  }
+
+  onSheetClosed() {
+    this.scheduleOpen.set(false);
+    const c = this.customer.customer();
+    if (c?.repetitionTime) this.reminderTime.set(c.repetitionTime);
   }
 
   navigate(path: string) { this.router.navigate([path]); }

@@ -25,6 +25,8 @@ export class CustomerMapper {
         prismaCustomer.channel as ChannelEnum,
       repetitionTime:
         prismaCustomer.repetitionTime,
+      notificationsEnabled:
+        prismaCustomer.notificationsEnabled,
       createdAt: prismaCustomer.createdAt,
       updatedAt: prismaCustomer.updatedAt,
       words: prismaCustomer.Word

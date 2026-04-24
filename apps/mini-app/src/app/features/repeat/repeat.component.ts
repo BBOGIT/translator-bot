@@ -9,12 +9,13 @@ import { TelegramService } from '../../core/services/telegram.service';
 import { IconsComponent } from '../../shared/components/icons/icons.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
+import { ScheduleSheetComponent } from '../../shared/components/schedule-sheet/schedule-sheet.component';
 import { Word } from '../../store/models';
 
 @Component({
   selector: 'app-repeat',
   standalone: true,
-  imports: [CommonModule, IconsComponent, BottomNavComponent, ScreenHdrComponent],
+  imports: [CommonModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, ScheduleSheetComponent],
   template: `
     <div class="screen">
       <app-screen-hdr title="Repeat Words" [showBack]="true" (back)="goHome()">
@@ -56,7 +57,7 @@ import { Word } from '../../store/models';
         </div>
         <div class="done-actions">
           <button class="btn btn-primary btn-full" (click)="restart()">Practice Again</button>
-          <button class="btn btn-secondary btn-full" (click)="navigate('/schedule')">Set Schedule</button>
+          <button class="btn btn-secondary btn-full" (click)="scheduleOpen.set(true)">Set Schedule</button>
         </div>
       </div>
 
@@ -110,6 +111,7 @@ import { Word } from '../../store/models';
     </div>
 
     <app-bottom-nav></app-bottom-nav>
+    <app-schedule-sheet [open]="scheduleOpen()" (closed)="scheduleOpen.set(false)"></app-schedule-sheet>
   `,
   styles: [`
     .screen { padding-bottom: calc(var(--nav-h) + 16px); min-height: 100dvh; }
@@ -223,9 +225,10 @@ export class RepeatComponent implements OnInit {
   loading$ = this.store.select(selectWordsLoading);
   words    = signal<Word[]>([]);
 
-  currentIndex = signal(0);
-  flipped      = signal(false);
-  sessionDone  = signal(false);
+  currentIndex  = signal(0);
+  flipped       = signal(false);
+  sessionDone   = signal(false);
+  scheduleOpen  = signal(false);
 
   results: Record<number, 'learned' | 'practice'> = {};
 

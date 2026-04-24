@@ -4,6 +4,26 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Word } from '../../store/models';
 
+export interface RepeatLevel {
+  level: number;
+  count: number;
+  intervalDays: number;
+}
+
+export interface WordStats {
+  total: number;
+  learned: number;
+  inProgress: number;
+  dueToday: number;
+  addedToday: number;
+  addedThisWeek: number;
+  addedThisMonth: number;
+  avgRepeatCount: number;
+  repeatLevels: RepeatLevel[];
+  lastActivity: string | null;
+  joinedDate: string | null;
+}
+
 interface PaginatedWords {
   words: Word[];
   total: number;
@@ -34,20 +54,34 @@ export class WordsApiService {
     });
   }
 
-  getWordCount(customerId: number): Observable<{ total: number; learned: number; inProgress: number; dueToday: number }> {
+  getWordCount(customerId: number): Observable<WordStats> {
     return this.http.get<{
       totalWords: number;
       learnedWords: number;
       wordsInProgress: number;
       wordsReadyForRepetition: number;
+      wordsAddedToday: number;
+      wordsAddedThisWeek: number;
+      wordsAddedThisMonth: number;
+      averageRepeatCount: number;
+      repeatLevelStats: { level: number; count: number; intervalDays: number }[];
+      lastActivityDate: string | null;
+      joinedDate: string | null;
     }>(`${this.base}/customer/${customerId}/stats`, {
       headers: { 'Cache-Control': 'no-cache' }
     }).pipe(
       map(s => ({
-        total: s.totalWords,
-        learned: s.learnedWords,
-        inProgress: s.wordsInProgress,
-        dueToday: s.wordsReadyForRepetition
+        total:          s.totalWords,
+        learned:        s.learnedWords,
+        inProgress:     s.wordsInProgress,
+        dueToday:       s.wordsReadyForRepetition,
+        addedToday:     s.wordsAddedToday,
+        addedThisWeek:  s.wordsAddedThisWeek,
+        addedThisMonth: s.wordsAddedThisMonth,
+        avgRepeatCount: s.averageRepeatCount,
+        repeatLevels:   s.repeatLevelStats ?? [],
+        lastActivity:   s.lastActivityDate ?? null,
+        joinedDate:     s.joinedDate ?? null,
       }))
     );
   }

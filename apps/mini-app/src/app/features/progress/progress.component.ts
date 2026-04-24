@@ -4,16 +4,12 @@ import { Router } from '@angular/router';
 import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
 import { IconsComponent } from '../../shared/components/icons/icons.component';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
-import { WordsApiService } from '../../core/api/words.api';
+import { WordsApiService, WordStats, RepeatLevel } from '../../core/api/words.api';
 import { CustomerService } from '../../core/services/customer.service';
 import { animateCount } from '../../shared/utils/count-up';
 
-interface Stats {
-  total: number;
-  learned: number;
-  dueToday: number;
+interface Stats extends WordStats {
   streak: number;
-  weeklyActivity: number[];
 }
 
 @Component({
@@ -28,7 +24,8 @@ interface Stats {
         </button>
       </app-screen-hdr>
 
-      <div class="screen-content" style="padding-top:20px">
+      <div class="screen-content">
+
         <!-- Ring -->
         <div class="ring-card card anim-scale-in">
           <svg width="172" height="172" viewBox="0 0 172 172">
@@ -52,43 +49,87 @@ interface Stats {
           </div>
         </div>
 
-        <!-- Metrics -->
+        <!-- 4-metric grid -->
         <div class="metrics-grid anim-slide-up d2">
           <div class="metric-card card">
             <div class="metric-header">
-              <app-icon name="book" [size]="16" class="icon-blue"></app-icon>
-              <span class="metric-label">Words Learned</span>
+              <app-icon name="book" [size]="15" class="icon-blue"></app-icon>
+              <span class="metric-label">Learned</span>
             </div>
             <span class="metric-num blue">{{ displayLearned() }}</span>
           </div>
           <div class="metric-card card">
             <div class="metric-header">
-              <app-icon name="flame" [size]="16" class="icon-orange"></app-icon>
-              <span class="metric-label">Streak Days</span>
+              <app-icon name="repeat" [size]="15" class="icon-purple"></app-icon>
+              <span class="metric-label">In Progress</span>
             </div>
-            <span class="metric-num orange">{{ displayStreak() }}</span>
+            <span class="metric-num purple">{{ displayInProgress() }}</span>
           </div>
-          <div class="metric-card card" style="grid-column: span 2">
+          <div class="metric-card card">
             <div class="metric-header">
-              <app-icon name="clock" [size]="16" class="icon-yellow"></app-icon>
+              <app-icon name="clock" [size]="15" class="icon-orange"></app-icon>
               <span class="metric-label">Due Today</span>
             </div>
-            <span class="metric-num yellow">{{ displayDueToday() }}</span>
+            <span class="metric-num orange">{{ displayDueToday() }}</span>
+          </div>
+          <div class="metric-card card">
+            <div class="metric-header">
+              <app-icon name="flame" [size]="15" class="icon-amber"></app-icon>
+              <span class="metric-label">Streak</span>
+            </div>
+            <span class="metric-num amber">{{ displayStreak() }}</span>
           </div>
         </div>
 
-        <!-- Weekly bar chart -->
-        <div class="weekly-card card anim-slide-up d3">
-          <h4 class="weekly-title">This Week</h4>
-          <div class="bars">
-            <div class="bar-col" *ngFor="let day of weekDays; let i = index">
-              <div class="bar-wrap">
-                <div class="bar" [class.weekend]="i === 0 || i === 6"
-                     [style.height.px]="barHeight(i)"></div>
-              </div>
-              <span class="bar-label">{{ day }}</span>
+        <!-- Activity -->
+        <div class="activity-card card anim-slide-up d3">
+          <h4 class="section-title">Words Added</h4>
+          <div class="activity-row">
+            <div class="activity-col">
+              <span class="activity-num">{{ displayAddedToday() }}</span>
+              <span class="activity-label">Today</span>
+            </div>
+            <div class="act-divider"></div>
+            <div class="activity-col">
+              <span class="activity-num">{{ displayAddedWeek() }}</span>
+              <span class="activity-label">This Week</span>
+            </div>
+            <div class="act-divider"></div>
+            <div class="activity-col">
+              <span class="activity-num">{{ displayAddedMonth() }}</span>
+              <span class="activity-label">This Month</span>
             </div>
           </div>
+        </div>
+
+        <!-- Repetition Journey -->
+        <div class="journey-card card anim-slide-up d3" *ngIf="visibleLevels().length > 0">
+          <h4 class="section-title">Repetition Journey</h4>
+          <div class="journey-levels">
+            <div class="level-row" *ngFor="let lvl of visibleLevels()">
+              <div class="level-meta">
+                <span class="level-name">{{ levelLabels[lvl.level] }}</span>
+                <span class="level-count" [class.zero]="lvl.count === 0">
+                  {{ lvl.count }} {{ lvl.count === 1 ? 'word' : 'words' }}
+                </span>
+              </div>
+              <div class="level-track">
+                <div class="level-fill"
+                     [style.width.%]="journeyReady() ? levelBarPct(lvl.count) : 0"
+                     [class.empty]="lvl.count === 0"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta row -->
+        <div class="meta-row anim-slide-up d4" *ngIf="stats.joinedDate">
+          <span class="meta-item">
+            <app-icon name="clock" [size]="12" style="color:var(--text-3)"></app-icon>
+            Learning for {{ learningDays() }}
+          </span>
+          <span class="meta-dot">·</span>
+          <span class="meta-item">Last active: {{ relativeDate(stats.lastActivity) }}</span>
         </div>
 
         <!-- CTAs -->
@@ -96,6 +137,7 @@ interface Stats {
           <button class="btn btn-primary btn-full" (click)="navigate('/repeat')">Repeat Now</button>
           <button class="btn btn-secondary btn-full" (click)="navigate('/words')">Browse Learned Words</button>
         </div>
+
       </div>
     </div>
 
@@ -108,8 +150,9 @@ interface Stats {
       border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
       color: var(--text-2);
     }
-    .screen-content { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .screen-content { padding: 16px; display: flex; flex-direction: column; gap: 12px; padding-top: 20px; }
 
+    /* Ring */
     .ring-card {
       display: flex; flex-direction: column; align-items: center;
       padding: 28px; position: relative; gap: 0;
@@ -118,34 +161,57 @@ interface Stats {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
       text-align: center; pointer-events: none;
     }
-    .ring-pct { font-size: 34px; font-weight: 800; color: var(--text); display: block; }
+    .ring-pct   { font-size: 34px; font-weight: 800; color: var(--text); display: block; }
     .ring-label { font-size: 12px; color: var(--text-2); }
 
+    /* 4-metric grid */
     .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .metric-card { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
-    .metric-header { display: flex; align-items: center; gap: 6px; }
-    .metric-label { font-size: 13px; color: var(--text-2); font-weight: 500; }
-    .metric-num   { font-size: 32px; font-weight: 800; line-height: 1; }
+    .metric-card  { padding: 14px 16px; display: flex; flex-direction: column; gap: 7px; }
+    .metric-header { display: flex; align-items: center; gap: 5px; }
+    .metric-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+    .metric-num   { font-size: 30px; font-weight: 800; line-height: 1; }
     .metric-num.blue   { color: #2AABEE; }
+    .metric-num.purple { color: #8B5CF6; }
     .metric-num.orange { color: #F59E0B; }
-    .metric-num.yellow { color: #D97706; }
+    .metric-num.amber  { color: #D97706; }
     .icon-blue   { color: #2AABEE; }
+    .icon-purple { color: #8B5CF6; }
     .icon-orange { color: #F59E0B; }
-    .icon-yellow { color: #D97706; }
+    .icon-amber  { color: #D97706; }
 
-    .weekly-card { padding: 18px; }
-    .weekly-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
-    .bars { display: flex; gap: 6px; height: 80px; align-items: flex-end; }
-    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .bar-wrap { flex: 1; display: flex; align-items: flex-end; width: 100%; }
-    .bar {
-      width: 100%; border-radius: 4px 4px 0 0;
-      background: linear-gradient(135deg, #2AABEE, #1A96D9);
-      min-height: 4px; transition: height 0.5s ease;
+    /* Activity */
+    .activity-card { padding: 16px 18px; }
+    .section-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+    .activity-row { display: flex; align-items: stretch; }
+    .activity-col { flex: 1; text-align: center; padding: 4px 0; }
+    .activity-num   { font-size: 26px; font-weight: 800; color: var(--text); display: block; }
+    .activity-label { font-size: 11px; color: var(--text-2); font-weight: 500; margin-top: 2px; display: block; }
+    .act-divider { width: 1px; background: var(--border); margin: 2px 0; }
+
+    /* Repetition Journey */
+    .journey-card { padding: 16px 18px; }
+    .journey-levels { display: flex; flex-direction: column; gap: 11px; }
+    .level-row { display: flex; flex-direction: column; gap: 5px; }
+    .level-meta { display: flex; justify-content: space-between; align-items: center; }
+    .level-name  { font-size: 12px; color: var(--text-2); font-weight: 600; }
+    .level-count { font-size: 12px; color: var(--text); font-weight: 700; }
+    .level-count.zero { color: var(--text-3); }
+    .level-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .level-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #2AABEE, #10B981);
+      transition: width 0.9s cubic-bezier(0.34, 1.1, 0.64, 1);
     }
-    .bar.weekend { background: #E5E7EB; }
-    .bar-label { font-size: 11px; color: var(--text-3); font-weight: 600; }
+    .level-fill.empty { background: var(--border); }
 
+    /* Meta row */
+    .meta-row {
+      display: flex; align-items: center; justify-content: center; gap: 8px; padding: 2px 0;
+    }
+    .meta-item { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 4px; }
+    .meta-dot  { color: var(--border); font-size: 14px; }
+
+    /* CTAs */
     .ctas { display: flex; flex-direction: column; gap: 10px; }
   `]
 })
@@ -156,39 +222,82 @@ export class ProgressComponent implements OnInit {
 
   readonly circumference = 2 * Math.PI * 72;
 
-  weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  readonly levelLabels: Record<number, string> = {
+    1: 'Tomorrow',
+    2: '3 days',
+    3: '1 week',
+    4: '2 weeks',
+    5: '1 month',
+    6: '3 months',
+  };
 
-  stats: Stats = { total: 0, learned: 0, dueToday: 0, streak: 0, weeklyActivity: [0,0,0,0,0,0,0] };
+  stats: Stats = {
+    total: 0, learned: 0, inProgress: 0, dueToday: 0, streak: 0,
+    addedToday: 0, addedThisWeek: 0, addedThisMonth: 0,
+    avgRepeatCount: 0, repeatLevels: [],
+    lastActivity: null, joinedDate: null,
+  };
 
   completedPct    = signal(0);
   dashOffset      = signal(this.circumference);
   displayPct      = signal(0);
   displayLearned  = signal(0);
+  displayInProgress = signal(0);
   displayStreak   = signal(0);
   displayDueToday = signal(0);
+  displayAddedToday  = signal(0);
+  displayAddedWeek   = signal(0);
+  displayAddedMonth  = signal(0);
+  journeyReady    = signal(false);
 
   ngOnInit() {
     this.customer.load().subscribe(c => {
       this.stats.streak = c.streak ?? 0;
       this.wordsApi.getWordCount(c.id).subscribe(s => {
-        this.stats = { ...this.stats, ...s, weeklyActivity: this.stats.weeklyActivity };
+        this.stats = { ...s, streak: this.stats.streak };
         const pct = s.total > 0 ? Math.round((s.learned / s.total) * 100) : 0;
         setTimeout(() => {
           this.completedPct.set(pct);
           this.dashOffset.set(this.circumference * (1 - pct / 100));
-          animateCount(this.stats.learned,  900,  v => this.displayLearned.set(v));
-          animateCount(this.stats.streak,   900,  v => this.displayStreak.set(v));
-          animateCount(this.stats.dueToday, 900,  v => this.displayDueToday.set(v));
-          animateCount(pct,                 1300, v => this.displayPct.set(v));
+          animateCount(pct,              1300, v => this.displayPct.set(v));
+          animateCount(s.learned,         900, v => this.displayLearned.set(v));
+          animateCount(s.inProgress,      900, v => this.displayInProgress.set(v));
+          animateCount(this.stats.streak, 900, v => this.displayStreak.set(v));
+          animateCount(s.dueToday,        900, v => this.displayDueToday.set(v));
+          animateCount(s.addedToday,      700, v => this.displayAddedToday.set(v));
+          animateCount(s.addedThisWeek,   800, v => this.displayAddedWeek.set(v));
+          animateCount(s.addedThisMonth,  900, v => this.displayAddedMonth.set(v));
         }, 200);
+        setTimeout(() => this.journeyReady.set(true), 400);
       });
     });
   }
 
-  barHeight(i: number): number {
-    const activity = this.stats.weeklyActivity ?? [];
-    const max = Math.max(...activity, 1);
-    return Math.round(((activity[i] ?? 0) / max) * 72);
+  visibleLevels(): RepeatLevel[] {
+    const lvls = this.stats.repeatLevels;
+    if (!lvls?.length) return [];
+    const lastIdx = lvls.reduceRight((acc: number, l, i) => acc === -1 && l.count > 0 ? i : acc, -1);
+    if (lastIdx === -1) return lvls.slice(0, 1);
+    return lvls.slice(0, Math.min(lastIdx + 2, lvls.length));
+  }
+
+  levelBarPct(count: number): number {
+    const max = Math.max(...(this.stats.repeatLevels?.map(l => l.count) ?? []), 1);
+    return Math.round((count / max) * 100);
+  }
+
+  learningDays(): string {
+    if (!this.stats.joinedDate) return '';
+    const days = Math.floor((Date.now() - new Date(this.stats.joinedDate).getTime()) / 86400000);
+    return `${days} day${days !== 1 ? 's' : ''}`;
+  }
+
+  relativeDate(iso: string | null): string {
+    if (!iso) return '—';
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Yesterday';
+    return `${diff} days ago`;
   }
 
   navigate(path: string) { this.router.navigate([path]); }
