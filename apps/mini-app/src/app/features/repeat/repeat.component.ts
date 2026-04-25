@@ -18,9 +18,7 @@ import { Word } from '../../store/models';
   imports: [CommonModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, ScheduleSheetComponent],
   template: `
     <div class="screen">
-      <app-screen-hdr title="Repeat Words" [showBack]="true" (back)="goHome()">
-        <span class="counter" *ngIf="!sessionDone()">{{ currentIndex() + 1 }}/{{ words().length }}</span>
-      </app-screen-hdr>
+      <app-screen-hdr title="Repeat Words" [showBack]="true" (back)="goHome()"></app-screen-hdr>
 
       <!-- Loading -->
       <div class="loading-state" *ngIf="loading$ | async">
@@ -81,7 +79,7 @@ import { Word } from '../../store/models';
         <div class="card-wrapper"
              (touchstart)="onTouchStart($event)"
              (touchend)="onTouchEnd($event)">
-          <div class="flashcard" [class.flipped]="flipped()" (click)="flip()">
+          <div class="flashcard" [class.flipped]="flipped()" [class.has-media]="hasMedia()" (click)="flip()">
             <!-- Front -->
             <div class="card-face front">
               <span class="lang-tag">English</span>
@@ -91,6 +89,19 @@ import { Word } from '../../store/models';
             <!-- Back -->
             <div class="card-face back">
               <span class="translation-big" [style.font-size]="translationFontSize()">{{ currentWord()!.translation }}</span>
+              <img *ngIf="currentWord()?.imageExample"
+                   [src]="mediaUrl(currentWord()!.imageExample!)"
+                   class="media-preview"
+                   alt="example"
+                   (click)="$event.stopPropagation()" />
+              <video *ngIf="currentWord()?.videoExample && !currentWord()?.imageExample"
+                     [src]="mediaUrl(currentWord()!.videoExample!)"
+                     class="media-preview"
+                     controls
+                     playsinline
+                     preload="metadata"
+                     (click)="$event.stopPropagation()">
+              </video>
               <div class="examples-block" *ngIf="currentWord()?.examples?.length">
                 <div class="ex-item" *ngFor="let ex of currentWord()!.examples!.slice(0,2)">
                   <span class="ex-bullet">·</span> {{ ex }}
@@ -118,7 +129,6 @@ import { Word } from '../../store/models';
   `,
   styles: [`
     .screen { padding-bottom: calc(var(--nav-h) + 16px); min-height: 100dvh; }
-    .counter { font-size: 14px; font-weight: 600; color: var(--text-2); }
 
     .loading-state {
       display: flex; justify-content: center; padding: 60px 0;
@@ -165,6 +175,7 @@ import { Word } from '../../store/models';
       transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       &.flipped { transform: rotateY(180deg); }
+      &.has-media { min-height: clamp(380px, 62dvh, 520px); }
     }
     .card-face {
       position: absolute; inset: 0; border-radius: var(--radius);
@@ -195,6 +206,15 @@ import { Word } from '../../store/models';
     .ex-item { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.5; display: flex; gap: 6px; align-items: flex-start; }
     .ex-bullet { font-size: 16px; line-height: 1.3; opacity: 0.7; flex-shrink: 0; }
     .tap-hint-back { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+    .media-preview {
+      width: 100%; max-height: 200px; object-fit: cover;
+      border-radius: 12px; flex-shrink: 0;
+    }
+    video.media-preview {
+      max-height: 180px; object-fit: contain; background: rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.25);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
 
     .card-actions {
       display: flex; gap: 12px;
@@ -246,6 +266,7 @@ export class RepeatComponent implements OnInit {
     ? (this.currentIndex() / this.words().length) * 100 : 0);
 
   currentWord = computed(() => this.words()[this.currentIndex()] ?? null);
+  hasMedia    = computed(() => !!(this.currentWord()?.imageExample || this.currentWord()?.videoExample));
 
   wordFontSize = computed(() => {
     const len = this.currentWord()?.word?.length ?? 0;
@@ -318,6 +339,10 @@ export class RepeatComponent implements OnInit {
     this.flipped.set(false);
     this.sessionDone.set(false);
     this.results = {};
+  }
+
+  mediaUrl(fileId: string): string {
+    return `/api/words/telegram-file/${fileId}`;
   }
 
   navigate(path: string) { this.router.navigate([path]); }

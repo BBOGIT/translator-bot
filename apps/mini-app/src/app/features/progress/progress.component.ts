@@ -18,11 +18,7 @@ interface Stats extends WordStats {
   imports: [CommonModule, ScreenHdrComponent, IconsComponent, BottomNavComponent],
   template: `
     <div class="screen">
-      <app-screen-hdr title="My Progress" [showBack]="true" (back)="navigate('/home')">
-        <button class="hdr-btn" (click)="navigate('/settings')">
-          <app-icon name="settings" [size]="20"></app-icon>
-        </button>
-      </app-screen-hdr>
+      <app-screen-hdr title="My Progress" [showBack]="true" (back)="navigate('/home')"></app-screen-hdr>
 
       <div class="screen-content">
 

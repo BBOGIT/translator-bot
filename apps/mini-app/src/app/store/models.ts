@@ -8,6 +8,8 @@ export interface Word {
   customerId?: number;
   intervalNumber?: number;
   nextRepetitionDate?: string;
+  imageExample?: string | null;
+  videoExample?: string | null;
 }
 
 export interface WordStats {

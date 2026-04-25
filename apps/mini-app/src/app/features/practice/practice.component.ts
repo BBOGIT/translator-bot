@@ -130,7 +130,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           <div class="card-wrapper"
                (touchstart)="onTouchStart($event)"
                (touchend)="onTouchEnd($event)">
-            <div class="flashcard" [class.flipped]="flipped()" (click)="flip()">
+            <div class="flashcard" [class.flipped]="flipped()" [class.has-media]="hasMedia()" (click)="flip()">
               <div class="card-face front">
                 <span class="lang-tag">English</span>
                 <span class="word-big" [style.font-size]="wordFontSize()">{{ currentWord()!.word }}</span>
@@ -138,6 +138,19 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
               </div>
               <div class="card-face back">
                 <span class="translation-big" [style.font-size]="translationFontSize()">{{ currentWord()!.translation }}</span>
+                <img *ngIf="currentWord()?.imageExample"
+                     [src]="mediaUrl(currentWord()!.imageExample!)"
+                     class="media-preview"
+                     alt="example"
+                     (click)="$event.stopPropagation()" />
+                <video *ngIf="currentWord()?.videoExample && !currentWord()?.imageExample"
+                       [src]="mediaUrl(currentWord()!.videoExample!)"
+                       class="media-preview"
+                       controls
+                       playsinline
+                       preload="metadata"
+                       (click)="$event.stopPropagation()">
+                </video>
                 <div class="examples-block-card" *ngIf="currentWord()?.examples?.length">
                   <div class="ex-item-card" *ngFor="let ex of currentWord()!.examples!.slice(0,2)">{{ ex }}</div>
                 </div>
@@ -199,17 +212,20 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
     }
     .card-wrapper { perspective: 1100px; margin-bottom: 20px; touch-action: pan-y; }
     .flashcard {
-      width: 100%; min-height: 280px; border-radius: var(--radius); position: relative;
+      width: 100%; min-height: clamp(300px, 52dvh, 480px); border-radius: var(--radius); position: relative;
       transform-style: preserve-3d; transition: transform 0.52s cubic-bezier(0.4,0,0.2,1); cursor: pointer;
       &.flipped { transform: rotateY(180deg); }
+      &.has-media { min-height: clamp(380px, 62dvh, 520px); }
     }
     .card-face {
       position: absolute; inset: 0; border-radius: var(--radius); backface-visibility: hidden;
       display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 24px;
-      overflow: hidden;
+      overflow-y: auto;
     }
     .front { background: var(--surface); box-shadow: var(--shadow); gap: 16px; }
-    .back { background: linear-gradient(145deg,#F59E0B,#D97706); transform: rotateY(180deg); gap: 20px; }
+    .back { background: linear-gradient(145deg,#F59E0B,#D97706); transform: rotateY(180deg); gap: 12px; justify-content: flex-start; padding-top: 28px; }
+    .media-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; flex-shrink: 0; }
+    video.media-preview { max-height: 180px; object-fit: contain; background: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
     .lang-tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--warning); background: #FEF3C7; padding: 4px 12px; border-radius: 20px; }
     .word-big { font-size: 44px; font-weight: 800; color: var(--text); text-align: center; line-height: 1.2; transition: font-size 0.2s ease; }
     .tap-hint { font-size: 13px; color: var(--text-3); }
@@ -249,7 +265,8 @@ export class PracticeComponent implements OnInit {
   sessionDone  = signal(false);
   results: Record<number, 'learned' | 'practice'> = {};
 
-  currentWord    = computed(() => this.sessionWords()[this.currentIndex()] ?? null);
+  currentWord = computed(() => this.sessionWords()[this.currentIndex()] ?? null);
+  hasMedia    = computed(() => !!(this.currentWord()?.imageExample || this.currentWord()?.videoExample));
   progressPercent = computed(() => this.sessionWords().length
     ? (this.currentIndex() / this.sessionWords().length) * 100 : 0);
   learnedCount  = computed(() => Object.values(this.results).filter(r => r === 'learned').length);
@@ -367,6 +384,10 @@ export class PracticeComponent implements OnInit {
     if (Math.abs(diff) > 52 && this.flipped()) {
       this.markResult(diff < 0 ? 'learned' : 'practice');
     }
+  }
+
+  mediaUrl(fileId: string): string {
+    return `/api/words/telegram-file/${fileId}`;
   }
 
   navigate(path: string) { this.router.navigate([path]); }

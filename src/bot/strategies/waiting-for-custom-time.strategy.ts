@@ -17,9 +17,8 @@ export class WaitingForCustomTimeStrategy extends BaseStateStrategy {
       services;
     const command = dto.text;
 
-    // Обробка ручного введення часу
-    const timeRegex =
-      /^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]$/;
+    // Обробка ручного введення часу (тільки година: 0-23)
+    const timeRegex = /^([01]?[0-9]|2[0-3])$/;
     if (timeRegex.test(command)) {
       await this.setRepetitionTime(
         command,
@@ -43,9 +42,12 @@ export class WaitingForCustomTimeStrategy extends BaseStateStrategy {
     const { customerService, messageService } =
       services;
 
+    const normalizedTime =
+      time.split(':')[0].padStart(2, '0') + ':00';
+
     await customerService.update({
       chatId: dto.chatId,
-      repetitionTime: time,
+      repetitionTime: normalizedTime,
       state: CustomerState.MainMenu
     });
 
@@ -54,7 +56,7 @@ export class WaitingForCustomTimeStrategy extends BaseStateStrategy {
       templateName: 'repetitionTimeConfirmed',
       lang,
       dynamicVariables: {
-        time: time
+        time: normalizedTime
       }
     });
   }

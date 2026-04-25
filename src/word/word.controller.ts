@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Put,
+  Redirect,
   HttpStatus,
   ParseIntPipe,
   ValidationPipe,
@@ -14,6 +15,8 @@ import {
   ParseBoolPipe,
 } from '@nestjs/common';
 import { WordService } from './word.service';
+import { TelegramService } from '../telegram/telegram.service';
+import { ConfigService } from '@nestjs/config';
 import {
   CreateWordDto,
   GetWordDto,
@@ -38,7 +41,21 @@ import { WordWithCustomer } from './cqrs/queries/get-words-for-repetition.query'
 @ApiTags('Words')
 @Controller('words')
 export class WordController {
-  constructor(private wordService: WordService) {}
+  constructor(
+    private wordService: WordService,
+    private telegramService: TelegramService,
+    private configService: ConfigService
+  ) {}
+
+  @Get('telegram-file/:fileId')
+  @Redirect()
+  @ApiOperation({ summary: 'Resolve Telegram file ID to a redirect URL' })
+  @ApiParam({ name: 'fileId', type: String })
+  async getTelegramFile(@Param('fileId') fileId: string) {
+    const { file_path } = await this.telegramService.getFile(fileId);
+    const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+    return { url: `https://api.telegram.org/file/bot${token}/${file_path}` };
+  }
 
   private mapToResponseDto(
     word: Partial<Word | WordWithCustomer>

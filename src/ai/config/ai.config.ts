@@ -3,7 +3,8 @@ import { ConfigService } from '@nestjs/config';
 
 export enum AIProvider {
   DEEPSEEK = 'deepseek',
-  OPENAI = 'openai'
+  OPENAI = 'openai',
+  GEMINI = 'gemini',
 }
 
 export interface OpenAIConfig {
@@ -22,6 +23,14 @@ export interface DeepseekConfig {
   model: string;
   imageModel: string;
   timeout: number;
+  maxTokens: number;
+  temperature: number;
+}
+
+export interface GeminiConfig {
+  apiKey: string;
+  model: string;
+  imageModel: string;
   maxTokens: number;
   temperature: number;
 }
@@ -129,6 +138,21 @@ export class AIConfig {
         'DEEPSEEK_TEMPERATURE',
         0.7
       )
+    };
+  }
+
+  get imageProvider(): AIProvider {
+    const configured = this.configService.get<string>('IMAGE_AI_PROVIDER');
+    return this.isValidProvider(configured) ? configured : this.provider;
+  }
+
+  get geminiConfig(): GeminiConfig {
+    return {
+      apiKey: this.getRequiredConfig('GEMINI_API_KEY'),
+      model: this.configService.get<string>('GEMINI_MODEL', 'gemini-2.0-flash'),
+      imageModel: this.configService.get<string>('GEMINI_IMAGE_MODEL', 'gemini-2.0-flash'),
+      maxTokens: this.configService.get<number>('GEMINI_MAX_TOKENS', 500),
+      temperature: this.configService.get<number>('GEMINI_TEMPERATURE', 0.7),
     };
   }
 

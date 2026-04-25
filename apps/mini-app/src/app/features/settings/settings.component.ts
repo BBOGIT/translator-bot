@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
 import { IconsComponent } from '../../shared/components/icons/icons.component';
 import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
@@ -15,7 +15,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
   imports: [CommonModule, ScreenHdrComponent, IconsComponent, ToggleComponent, ScheduleSheetComponent, BottomNavComponent],
   template: `
     <div class="screen">
-      <app-screen-hdr title="Settings" [showBack]="true" (back)="goBack()"></app-screen-hdr>
+      <app-screen-hdr title="Settings" [showBack]="true" [hideSettings]="true" (back)="goBack()"></app-screen-hdr>
 
       <div class="screen-content" style="padding-top:16px">
 
@@ -96,7 +96,7 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
   `]
 })
 export class SettingsComponent implements OnInit {
-  private router   = inject(Router);
+  private location = inject(Location);
   private customer = inject(CustomerService);
   private telegram = inject(TelegramService);
 
@@ -140,5 +140,5 @@ export class SettingsComponent implements OnInit {
     if (c?.repetitionTime) this.reminderTime.set(c.repetitionTime);
   }
 
-  goBack() { this.router.navigate(['/progress']); }
+  goBack() { this.location.back(); }
 }

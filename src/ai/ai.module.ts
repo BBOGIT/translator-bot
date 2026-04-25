@@ -5,6 +5,7 @@ import { AiService } from './ai.service';
 import { AIConfig } from './config/ai.config';
 import { OpenAIService } from './providers/openai.service';
 import { DeepseekService } from './providers/deepseek.service';
+import { GeminiService } from './providers/gemini.service';
 import { MetricsModule } from '../common/metrics/metrics.module';
 import { AICacheService } from './services/ai-cache.service';
 import { CacheModule } from '../cache/cache.module';
@@ -24,6 +25,7 @@ import { CacheModule } from '../cache/cache.module';
     AiService,
     OpenAIService,
     DeepseekService,
+    GeminiService,
     AICacheService
   ],
   exports: [AiService, AICacheService]

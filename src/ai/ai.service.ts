@@ -8,6 +8,7 @@ import {
 } from './config/ai.config';
 import { OpenAIService } from './providers/openai.service';
 import { DeepseekService } from './providers/deepseek.service';
+import { GeminiService } from './providers/gemini.service';
 import { IAIProvider } from './interfaces/ai-provider.interface';
 import { AIResponse } from './interfaces/ai-response.interface';
 import { AIProviderError, ServiceError } from '../common/errors/domain-errors';
@@ -20,14 +21,17 @@ export class AiService {
     AiService.name
   );
   private readonly provider: IAIProvider;
+  private readonly imageProvider: IAIProvider;
 
   constructor(
     private readonly config: AIConfig,
     private readonly openAIService: OpenAIService,
     private readonly deepseekService: DeepseekService,
+    private readonly geminiService: GeminiService,
     private readonly cacheService: AICacheService
   ) {
     this.provider = this.getProvider();
+    this.imageProvider = this.getImageProvider();
     this.logProviderInitialization();
   }
 
@@ -290,16 +294,16 @@ export class AiService {
       return cachedResponse;
     }
 
-    // ОБРОБЛЯЄМО ЗОБРАЖЕННЯ ЧЕРЕЗ AI ПРОВАЙДЕР
+    // ОБРОБЛЯЄМО ЗОБРАЖЕННЯ ЧЕРЕЗ IMAGE ПРОВАЙДЕР
     const response =
-      await this.provider.processImage(
+      await this.imageProvider.processImage(
         imageBuffer
       );
 
     // 💾 ЗБЕРІГАЄМО В КЕШ
     await this.cacheService.setImageResponse(
       imageHash,
-      this.config.provider,
+      this.config.imageProvider,
       response
     );
 
@@ -327,32 +331,52 @@ export class AiService {
     try {
       switch (this.config.provider) {
         case AIProvider.OPENAI:
-          this.logger.debug(
-            'Selecting OpenAI provider'
-          );
+          this.logger.debug('Selecting OpenAI provider');
           return this.openAIService;
         case AIProvider.DEEPSEEK:
-          this.logger.debug(
-            'Selecting Deepseek provider'
-          );
+          this.logger.debug('Selecting Deepseek provider');
           return this.deepseekService;
+        case AIProvider.GEMINI:
+          this.logger.debug('Selecting Gemini provider');
+          return this.geminiService;
         default:
           throw new Error(
             `Unsupported AI provider: ${this.config.provider}`
           );
       }
     } catch (error) {
-      this.logger.error(
-        'Failed to initialize provider',
-        {
-          provider: this.config.provider,
-          error: error.message
-        }
-      );
+      this.logger.error('Failed to initialize provider', {
+        provider: this.config.provider,
+        error: error.message
+      });
       throw new AIProviderError(
         this.config.provider,
         `Failed to initialize AI provider: ${error.message}`
       );
+    }
+  }
+
+  private getImageProvider(): IAIProvider {
+    try {
+      switch (this.config.imageProvider) {
+        case AIProvider.OPENAI:
+          this.logger.debug('Selecting OpenAI as image provider');
+          return this.openAIService;
+        case AIProvider.GEMINI:
+          this.logger.debug('Selecting Gemini as image provider');
+          return this.geminiService;
+        case AIProvider.DEEPSEEK:
+          this.logger.debug('Selecting Deepseek as image provider');
+          return this.deepseekService;
+        default:
+          return this.provider;
+      }
+    } catch (error) {
+      this.logger.error('Failed to initialize image provider', {
+        imageProvider: this.config.imageProvider,
+        error: error.message
+      });
+      return this.provider;
     }
   }
 

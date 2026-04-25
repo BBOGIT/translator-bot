@@ -3,6 +3,7 @@ import {
   Logger,
   HttpException
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ChannelEnum } from './enum/channel.enum';
 import {
   TelegramApiError,
@@ -24,7 +25,8 @@ export class MessageService {
 
   constructor(
     private readonly templateService: TemplateService,
-    private readonly telegramApiClient: TelegramApiClient
+    private readonly telegramApiClient: TelegramApiClient,
+    private readonly configService: ConfigService
   ) {}
 
   public async TelegramSendMessage(
@@ -147,9 +149,11 @@ export class MessageService {
         );
       }
 
+      const miniAppUrl = this.configService.get<string>('MINI_APP_URL', '');
+
       const mergedAttributes =
         this.templateService.mergeAndReplaceAttributes(
-          dynamicVariables,
+          { miniAppUrl, ...dynamicVariables },
           restAttributes,
           lang,
           chatId,
