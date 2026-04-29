@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { WordsActions } from '../../store/words/words.actions';
@@ -15,10 +16,10 @@ import { Word } from '../../store/models';
 @Component({
   selector: 'app-repeat',
   standalone: true,
-  imports: [CommonModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, ScheduleSheetComponent],
+  imports: [CommonModule, TranslateModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, ScheduleSheetComponent],
   template: `
     <div class="screen">
-      <app-screen-hdr title="Repeat Words" [showBack]="true" (back)="goHome()"></app-screen-hdr>
+      <app-screen-hdr [title]="'repeat.header' | translate" [showBack]="true" (back)="goHome()"></app-screen-hdr>
 
       <!-- Loading -->
       <div class="loading-state" *ngIf="loading$ | async">
@@ -30,10 +31,10 @@ import { Word } from '../../store/models';
       <!-- Empty state -->
       <div class="empty-state" *ngIf="!(loading$ | async) && words().length === 0">
         <span class="empty-emoji">🎉</span>
-        <h3>All caught up!</h3>
-        <p>No words due for repetition today.</p>
-        <button class="btn btn-primary" (click)="goHome()">Back to Home</button>
-        <button class="btn btn-secondary" (click)="navigate('/practice')">Practice All Words →</button>
+        <h3>{{ 'repeat.caught_up' | translate }}</h3>
+        <p>{{ 'repeat.no_due' | translate }}</p>
+        <button class="btn btn-primary" (click)="goHome()">{{ 'repeat.back_home' | translate }}</button>
+        <button class="btn btn-secondary" (click)="navigate('/practice')">{{ 'repeat.practice_all' | translate }}</button>
       </div>
 
       <!-- Session complete -->
@@ -41,21 +42,21 @@ import { Word } from '../../store/models';
         <div class="done-circle">
           <app-icon name="check" [size]="40" style="color:#fff"></app-icon>
         </div>
-        <h2>Session Complete!</h2>
-        <p>You reviewed {{ words().length }} words</p>
+        <h2>{{ 'repeat.session_complete' | translate }}</h2>
+        <p>{{ 'repeat.reviewed' | translate:{ count: words().length } }}</p>
         <div class="done-stats">
           <div class="done-stat">
             <span class="done-num success">{{ learnedCount() }}</span>
-            <span class="done-label">Learned</span>
+            <span class="done-label">{{ 'repeat.learned' | translate }}</span>
           </div>
           <div class="done-stat">
             <span class="done-num warning">{{ practiceCount() }}</span>
-            <span class="done-label">Practice</span>
+            <span class="done-label">{{ 'repeat.practice' | translate }}</span>
           </div>
         </div>
         <div class="done-actions">
-          <button class="btn btn-primary btn-full" (click)="restart()">Practice Again</button>
-          <button class="btn btn-secondary btn-full" (click)="scheduleOpen.set(true)">Set Schedule</button>
+          <button class="btn btn-primary btn-full" (click)="restart()">{{ 'repeat.practice_again' | translate }}</button>
+          <button class="btn btn-secondary btn-full" (click)="scheduleOpen.set(true)">{{ 'repeat.set_schedule' | translate }}</button>
         </div>
       </div>
 
@@ -84,7 +85,7 @@ import { Word } from '../../store/models';
             <div class="card-face front">
               <span class="lang-tag">English</span>
               <span class="word-big" [style.font-size]="wordFontSize()">{{ currentWord()!.word }}</span>
-              <span class="tap-hint">Tap to reveal</span>
+              <span class="tap-hint">{{ 'repeat.tap_to_reveal' | translate }}</span>
             </div>
             <!-- Back -->
             <div class="card-face back">
@@ -107,7 +108,7 @@ import { Word } from '../../store/models';
                   <span class="ex-bullet">·</span> {{ ex }}
                 </div>
               </div>
-              <span class="tap-hint tap-hint-back">Tap to flip back</span>
+              <span class="tap-hint tap-hint-back">{{ 'repeat.tap_to_flip' | translate }}</span>
             </div>
           </div>
         </div>
@@ -115,10 +116,10 @@ import { Word } from '../../store/models';
         <!-- Action buttons (after flip) -->
         <div class="card-actions" *ngIf="flipped()">
           <button class="btn btn-warn" (click)="markResult('practice')">
-            Need Practice
+            {{ 'repeat.need_practice' | translate }}
           </button>
           <button class="btn btn-success" (click)="markResult('learned')">
-            Learned ✓
+            {{ 'repeat.learned_btn' | translate }}
           </button>
         </div>
       </div>

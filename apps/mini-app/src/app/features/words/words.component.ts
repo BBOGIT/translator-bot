@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
 import { IconsComponent } from '../../shared/components/icons/icons.component';
@@ -14,15 +15,15 @@ const PAGE_SIZE = 9;
 @Component({
   selector: 'app-words',
   standalone: true,
-  imports: [CommonModule, FormsModule, ScreenHdrComponent, IconsComponent, SkeletonComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, ScreenHdrComponent, IconsComponent, SkeletonComponent],
   template: `
     <div class="screen no-bottom-nav">
-      <app-screen-hdr title="Learned Words" [showBack]="true" (back)="goBack()"></app-screen-hdr>
+      <app-screen-hdr [title]="'words.header' | translate" [showBack]="true" (back)="goBack()"></app-screen-hdr>
 
       <!-- Sticky search -->
       <div class="search-bar">
         <app-icon name="search" [size]="18" style="color:var(--text-3)"></app-icon>
-        <input type="text" [(ngModel)]="query" (ngModelChange)="onSearch($event)" placeholder="Search words...">
+        <input type="text" [(ngModel)]="query" (ngModelChange)="onSearch($event)" [placeholder]="'words.search_placeholder' | translate">
         <button *ngIf="query" (click)="clearSearch()" class="clear-btn">
           <app-icon name="x" [size]="16"></app-icon>
         </button>
@@ -30,7 +31,7 @@ const PAGE_SIZE = 9;
 
       <div class="screen-content" style="padding-top:12px">
         <!-- Word count -->
-        <p class="word-count" *ngIf="!loading()">{{ filtered().length }} words</p>
+        <p class="word-count" *ngIf="!loading()">{{ 'words.word_count_many' | translate:{ count: filtered().length } }}</p>
 
         <!-- Skeleton -->
         <div *ngIf="loading()" style="display:flex;flex-direction:column;gap:8px">
@@ -40,7 +41,7 @@ const PAGE_SIZE = 9;
         <!-- Empty state -->
         <div class="empty-state" *ngIf="!loading() && filtered().length === 0">
           <span>📚</span>
-          <p>No words found</p>
+          <p>{{ 'words.empty' | translate }}</p>
         </div>
 
         <!-- List -->
@@ -65,7 +66,7 @@ const PAGE_SIZE = 9;
         <button class="btn btn-outline btn-full"
                 *ngIf="hasMore() && !loading()"
                 (click)="loadMore()">
-          Load More ({{ remaining() }} remaining)
+          {{ 'words.load_more' | translate:{ count: remaining() } }}
         </button>
       </div>
     </div>

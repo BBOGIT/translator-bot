@@ -1,6 +1,7 @@
 import { Component, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { WordsActions } from '../../store/words/words.actions';
@@ -15,10 +16,10 @@ import { CustomerService } from '../../core/services/customer.service';
 @Component({
   selector: 'app-learn',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, SkeletonComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, SkeletonComponent],
   template: `
     <div class="screen">
-      <app-screen-hdr title="Learn Words" [showBack]="true" (back)="goBack()"></app-screen-hdr>
+      <app-screen-hdr [title]="'learn.header' | translate" [showBack]="true" (back)="goBack()"></app-screen-hdr>
 
       <div class="screen-content" style="padding-top:16px">
         <!-- Error -->
@@ -29,16 +30,16 @@ import { CustomerService } from '../../core/services/customer.service';
 
         <!-- Input Card -->
         <div class="input-card card" [class.shake]="shaking()">
-          <label class="input-label">ENGLISH WORD OR PHRASE</label>
-          <textarea #textInput class="word-input" [(ngModel)]="inputText" placeholder="e.g. serendipity" rows="2" (input)="autoResize($event)"></textarea>
+          <label class="input-label">{{ 'learn.input_label' | translate }}</label>
+          <textarea #textInput class="word-input" [(ngModel)]="inputText" [placeholder]="'learn.placeholder' | translate" rows="2" (input)="autoResize($event)"></textarea>
           <input #fileInput type="file" accept="image/*" style="display:none" (change)="onFileSelected($event)">
           <div class="input-actions">
             <button class="btn btn-outline btn-sm" (click)="fileInput.click()">
               <app-icon name="camera" [size]="16"></app-icon>
-              Photo
+              {{ 'learn.photo_btn' | translate }}
             </button>
             <button class="btn btn-primary" style="flex:2.2" (click)="translate()">
-              Translate →
+              {{ 'learn.translate_btn' | translate }}
             </button>
           </div>
         </div>
@@ -57,7 +58,7 @@ import { CustomerService } from '../../core/services/customer.service';
         <!-- Result Card -->
         <div class="result-card" *ngIf="(translation$ | async) as word">
           <div class="result-header">
-            <span class="lang-label">English → Ukrainian</span>
+            <span class="lang-label">{{ 'learn.result_header' | translate }}</span>
             <span class="word-text">{{ word.word }}</span>
             <span class="translation-text">{{ word.translation }}</span>
           </div>
@@ -65,7 +66,7 @@ import { CustomerService } from '../../core/services/customer.service';
             <!-- Examples accordion -->
             <div class="examples-section" *ngIf="word.examples?.length">
               <button class="examples-toggle" (click)="examplesOpen.set(!examplesOpen())">
-                <span>{{ examplesOpen() ? 'Hide' : 'Show' }} examples</span>
+                <span>{{ (examplesOpen() ? 'learn.hide_examples' : 'learn.show_examples') | translate }}</span>
                 <app-icon [name]="examplesOpen() ? 'chev-u' : 'chev-d'" [size]="16"></app-icon>
               </button>
               <div class="examples-list" *ngIf="examplesOpen()">
@@ -74,9 +75,9 @@ import { CustomerService } from '../../core/services/customer.service';
             </div>
 
             <div class="result-actions">
-              <button class="btn btn-secondary btn-sm" (click)="clearTranslation()">Learn More</button>
+              <button class="btn btn-secondary btn-sm" (click)="clearTranslation()">{{ 'learn.learn_more' | translate }}</button>
               <button class="btn btn-success" [class.pulse]="saving()" (click)="saveWord(word)">
-                Got It! ✓
+                {{ 'learn.got_it' | translate }}
               </button>
             </div>
           </div>

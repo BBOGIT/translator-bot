@@ -3,6 +3,7 @@ import {
   signal, computed
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { CustomerService } from '../../../core/services/customer.service';
 import { TelegramService } from '../../../core/services/telegram.service';
 import { IconsComponent } from '../icons/icons.component';
@@ -15,7 +16,7 @@ const VP_CY  = VP_H / 2;         // 140
 @Component({
   selector: 'app-schedule-sheet',
   standalone: true,
-  imports: [CommonModule, IconsComponent],
+  imports: [CommonModule, IconsComponent, TranslateModule],
   template: `
     <div class="backdrop" *ngIf="_open" (click)="close()"></div>
 
@@ -24,8 +25,8 @@ const VP_CY  = VP_H / 2;         // 140
 
       <div class="sheet-header">
         <div>
-          <h3 class="sheet-title">Daily reminder</h3>
-          <p class="sheet-sub">Notification fires every day at this hour</p>
+          <h3 class="sheet-title">{{ 'schedule.header' | translate }}</h3>
+          <p class="sheet-sub">{{ 'schedule.sub' | translate }}</p>
         </div>
         <div class="summary-pill">
           <app-icon name="clock" [size]="14" style="color:var(--primary)"></app-icon>
@@ -60,7 +61,7 @@ const VP_CY  = VP_H / 2;         // 140
       <button class="btn btn-primary btn-full save-btn"
               [class.pulse]="saved()"
               (click)="save()">
-        {{ saved() ? 'Saved ✓' : 'Save Schedule' }}
+        {{ saved() ? ('schedule.saved' | translate) : ('schedule.save' | translate) }}
       </button>
     </div>
   `,

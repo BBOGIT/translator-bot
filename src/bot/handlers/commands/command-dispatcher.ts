@@ -17,6 +17,7 @@ import { LearningWordsHandler } from '../words/learning-words.handler';
 import { WordTranslationHandler } from '../words/word-translation.handler';
 import { WordRepetitionHandler } from '../repetition/word-repetition.handler';
 import { ForwardedMessageHandler } from '../forwarded/forwarded-message.handler';
+import { RemindLaterHandler } from './remind-later.handler';
 import { CustomerService } from '../../../customer/customer.service';
 import { MessageService } from '../../../message/message.service';
 import { AiService } from '../../../ai/ai.service';
@@ -47,6 +48,7 @@ export class CommandDispatcher {
     private readonly wordTranslationHandler: WordTranslationHandler,
     private readonly wordRepetitionHandler: WordRepetitionHandler,
     private readonly forwardedMessageHandler: ForwardedMessageHandler,
+    private readonly remindLaterHandler: RemindLaterHandler,
     private readonly customerService: CustomerService,
     private readonly messageService: MessageService,
     private readonly aiService: AiService,
@@ -58,7 +60,8 @@ export class CommandDispatcher {
       learnWordsHandler,
       repetitionHandler,
       progressHandler,
-      wordRepetitionHandler
+      wordRepetitionHandler,
+      remindLaterHandler
     ];
 
     // Register handlers for text commands

@@ -10,6 +10,7 @@ import { WordRepetitionHandler } from './repetition/word-repetition.handler';
 import { WordTranslationHandler } from './words/word-translation.handler';
 import { StateHandler } from './states/state-handler';
 import { ForwardedMessageHandler } from './forwarded/forwarded-message.handler';
+import { RemindLaterHandler } from './commands/remind-later.handler';
 import { CustomerModule } from '../../customer/customer.module';
 import { MessageModule } from '../../message/message.module';
 import { WordModule } from '../../word/word.module';
@@ -39,7 +40,8 @@ import { JobsModule } from '../../jobs/jobs.module';
     WordRepetitionHandler,
     WordTranslationHandler,
     StateHandler,
-    ForwardedMessageHandler
+    ForwardedMessageHandler,
+    RemindLaterHandler
   ],
   exports: [
     CommandDispatcher,

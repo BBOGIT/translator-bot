@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
 import { IconsComponent } from '../../shared/components/icons/icons.component';
@@ -15,10 +16,10 @@ interface Stats extends WordStats {
 @Component({
   selector: 'app-progress',
   standalone: true,
-  imports: [CommonModule, ScreenHdrComponent, IconsComponent, BottomNavComponent],
+  imports: [CommonModule, TranslateModule, ScreenHdrComponent, IconsComponent, BottomNavComponent],
   template: `
     <div class="screen">
-      <app-screen-hdr title="My Progress" [showBack]="true" (back)="navigate('/home')"></app-screen-hdr>
+      <app-screen-hdr [title]="'progress.header' | translate" [showBack]="true" (back)="navigate('/home')"></app-screen-hdr>
 
       <div class="screen-content">
 
@@ -41,7 +42,7 @@ interface Stats extends WordStats {
           </svg>
           <div class="ring-center">
             <span class="ring-pct">{{ displayPct() }}%</span>
-            <span class="ring-label">completed</span>
+            <span class="ring-label">{{ 'progress.completed' | translate }}</span>
           </div>
         </div>
 
@@ -50,28 +51,28 @@ interface Stats extends WordStats {
           <div class="metric-card card">
             <div class="metric-header">
               <app-icon name="book" [size]="15" class="icon-blue"></app-icon>
-              <span class="metric-label">Learned</span>
+              <span class="metric-label">{{ 'progress.learned' | translate }}</span>
             </div>
             <span class="metric-num blue">{{ displayLearned() }}</span>
           </div>
           <div class="metric-card card">
             <div class="metric-header">
               <app-icon name="repeat" [size]="15" class="icon-purple"></app-icon>
-              <span class="metric-label">In Progress</span>
+              <span class="metric-label">{{ 'progress.in_progress' | translate }}</span>
             </div>
             <span class="metric-num purple">{{ displayInProgress() }}</span>
           </div>
           <div class="metric-card card">
             <div class="metric-header">
               <app-icon name="clock" [size]="15" class="icon-orange"></app-icon>
-              <span class="metric-label">Due Today</span>
+              <span class="metric-label">{{ 'progress.due_today' | translate }}</span>
             </div>
             <span class="metric-num orange">{{ displayDueToday() }}</span>
           </div>
           <div class="metric-card card">
             <div class="metric-header">
               <app-icon name="flame" [size]="15" class="icon-amber"></app-icon>
-              <span class="metric-label">Streak</span>
+              <span class="metric-label">{{ 'progress.streak' | translate }}</span>
             </div>
             <span class="metric-num amber">{{ displayStreak() }}</span>
           </div>
@@ -79,34 +80,34 @@ interface Stats extends WordStats {
 
         <!-- Activity -->
         <div class="activity-card card anim-slide-up d3">
-          <h4 class="section-title">Words Added</h4>
+          <h4 class="section-title">{{ 'progress.words_added' | translate }}</h4>
           <div class="activity-row">
             <div class="activity-col">
               <span class="activity-num">{{ displayAddedToday() }}</span>
-              <span class="activity-label">Today</span>
+              <span class="activity-label">{{ 'progress.today' | translate }}</span>
             </div>
             <div class="act-divider"></div>
             <div class="activity-col">
               <span class="activity-num">{{ displayAddedWeek() }}</span>
-              <span class="activity-label">This Week</span>
+              <span class="activity-label">{{ 'progress.this_week' | translate }}</span>
             </div>
             <div class="act-divider"></div>
             <div class="activity-col">
               <span class="activity-num">{{ displayAddedMonth() }}</span>
-              <span class="activity-label">This Month</span>
+              <span class="activity-label">{{ 'progress.this_month' | translate }}</span>
             </div>
           </div>
         </div>
 
         <!-- Repetition Journey -->
         <div class="journey-card card anim-slide-up d3" *ngIf="visibleLevels().length > 0">
-          <h4 class="section-title">Repetition Journey</h4>
+          <h4 class="section-title">{{ 'progress.repetition_journey' | translate }}</h4>
           <div class="journey-levels">
             <div class="level-row" *ngFor="let lvl of visibleLevels()">
               <div class="level-meta">
-                <span class="level-name">{{ levelLabels[lvl.level] }}</span>
+                <span class="level-name">{{ levelLabels[lvl.level] | translate }}</span>
                 <span class="level-count" [class.zero]="lvl.count === 0">
-                  {{ lvl.count }} {{ lvl.count === 1 ? 'word' : 'words' }}
+                  {{ lvl.count }} {{ (lvl.count === 1 ? 'progress.word' : 'progress.words') | translate }}
                 </span>
               </div>
               <div class="level-track">
@@ -122,16 +123,16 @@ interface Stats extends WordStats {
         <div class="meta-row anim-slide-up d4" *ngIf="stats.joinedDate">
           <span class="meta-item">
             <app-icon name="clock" [size]="12" style="color:var(--text-3)"></app-icon>
-            Learning for {{ learningDays() }}
+            {{ 'progress.learning_for' | translate }} {{ learningDays() }}
           </span>
           <span class="meta-dot">·</span>
-          <span class="meta-item">Last active: {{ relativeDate(stats.lastActivity) }}</span>
+          <span class="meta-item">{{ 'progress.last_active' | translate }} {{ relativeDate(stats.lastActivity) }}</span>
         </div>
 
         <!-- CTAs -->
         <div class="ctas anim-slide-up d4">
-          <button class="btn btn-primary btn-full" (click)="navigate('/repeat')">Repeat Now</button>
-          <button class="btn btn-secondary btn-full" (click)="navigate('/words')">Browse Learned Words</button>
+          <button class="btn btn-primary btn-full" (click)="navigate('/repeat')">{{ 'progress.repeat_now' | translate }}</button>
+          <button class="btn btn-secondary btn-full" (click)="navigate('/words')">{{ 'progress.browse_learned' | translate }}</button>
         </div>
 
       </div>
@@ -212,19 +213,20 @@ interface Stats extends WordStats {
   `]
 })
 export class ProgressComponent implements OnInit {
-  private router   = inject(Router);
-  private wordsApi = inject(WordsApiService);
-  private customer = inject(CustomerService);
+  private router    = inject(Router);
+  private wordsApi  = inject(WordsApiService);
+  private customer  = inject(CustomerService);
+  private translate = inject(TranslateService);
 
   readonly circumference = 2 * Math.PI * 72;
 
   readonly levelLabels: Record<number, string> = {
-    1: 'Tomorrow',
-    2: '3 days',
-    3: '1 week',
-    4: '2 weeks',
-    5: '1 month',
-    6: '3 months',
+    1: 'progress.level_1',
+    2: 'progress.level_2',
+    3: 'progress.level_3',
+    4: 'progress.level_4',
+    5: 'progress.level_5',
+    6: 'progress.level_6',
   };
 
   stats: Stats = {
@@ -285,15 +287,18 @@ export class ProgressComponent implements OnInit {
   learningDays(): string {
     if (!this.stats.joinedDate) return '';
     const days = Math.floor((Date.now() - new Date(this.stats.joinedDate).getTime()) / 86400000);
-    return `${days} day${days !== 1 ? 's' : ''}`;
+    const unit = days === 1
+      ? this.translate.instant('progress.day')
+      : this.translate.instant('progress.days');
+    return `${days} ${unit}`;
   }
 
   relativeDate(iso: string | null): string {
     if (!iso) return '—';
     const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-    if (diff === 0) return 'Today';
-    if (diff === 1) return 'Yesterday';
-    return `${diff} days ago`;
+    if (diff === 0) return this.translate.instant('progress.today_label');
+    if (diff === 1) return this.translate.instant('progress.yesterday_label');
+    return `${diff} ${this.translate.instant('progress.days_ago')}`;
   }
 
   navigate(path: string) { this.router.navigate([path]); }

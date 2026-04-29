@@ -81,7 +81,7 @@
         "name": "repeatWords",
         "description": "repeatWords",
         "channel": "telegram",
-        "body": "{\"text\":\"{{repeatWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"web_app\":{\"url\":\"{{miniAppUrl}}/repeat\"}}, {\"text\":\"{{repeatWordsScheduleButton}}\",\"callback_data\":\"/repeatWordsSchedule\"}], [{\"text\":\"{{viewSettingsButton}}\",\"callback_data\":\"/viewSettings\"}, {\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"MarkdownV2\"}"
+        "body": "{\"text\":\"{{repeatWordsText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"web_app\":{\"url\":\"{{miniAppUrl}}/repeat\"}}], [{\"text\":\"{{viewSettingsButton}}\",\"web_app\":{\"url\":\"{{miniAppUrl}}/settings\"}}, {\"text\":\"{{mainMenuButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"MarkdownV2\"}"
     },
     {
         "name": "repeatWordsNow",
@@ -225,7 +225,13 @@
         "name": "repetitionPrompt",
         "description": "Нагадування про повторення слів",
         "channel": "telegram",
-        "body": "{\"text\":\"{{repetitionPromptText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"callback_data\":\"/repeatWordsNow\"}], [{\"text\":\"{{remindLaterButton}}\",\"callback_data\":\"/mainMenu\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+        "body": "{\"text\":\"{{repetitionPromptText}}\",\"chat_id\":\"{{chatId}}\",\"reply_markup\":{\"inline_keyboard\":[[{\"text\":\"{{repeatWordsNowButton}}\",\"web_app\":{\"url\":\"{{miniAppUrl}}/repeat\"}}], [{\"text\":\"{{remindLaterButton}}\",\"callback_data\":\"/remindLater\"}]],\"resize_keyboard\":true,\"one_time_keyboard\":true},\"parse_mode\":\"markdown\"}"
+    },
+    {
+        "name": "remindLaterConfirm",
+        "description": "Підтвердження відкладення нагадування",
+        "channel": "telegram",
+        "body": "{\"text\":\"{{remindLaterConfirmText}}\",\"chat_id\":\"{{chatId}}\",\"parse_mode\":\"markdown\"}"
     },
     {
         "name": "customTimePrompt",

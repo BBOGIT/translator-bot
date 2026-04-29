@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { IconsComponent } from '../icons/icons.component';
 
 interface NavItem {
@@ -12,7 +13,7 @@ interface NavItem {
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
-  imports: [CommonModule, RouterLink, IconsComponent],
+  imports: [CommonModule, RouterLink, IconsComponent, TranslateModule],
   template: `
     <nav class="bottom-nav">
       <a *ngFor="let item of items"
@@ -21,7 +22,7 @@ interface NavItem {
          [class.active]="isActive(item.route)">
         <span class="indicator"></span>
         <app-icon [name]="item.icon" [size]="22"></app-icon>
-        <span class="label">{{ item.label }}</span>
+        <span class="label">{{ item.label | translate }}</span>
       </a>
     </nav>
   `,
@@ -89,10 +90,10 @@ export class BottomNavComponent {
   private router = inject(Router);
 
   items: NavItem[] = [
-    { label: 'Home',     icon: 'home',      route: '/home' },
-    { label: 'Learn',    icon: 'book',      route: '/learn' },
-    { label: 'Repeat',   icon: 'repeat',    route: '/repeat' },
-    { label: 'Progress', icon: 'bar-chart', route: '/progress' },
+    { label: 'nav.home',     icon: 'home',      route: '/home' },
+    { label: 'nav.learn',    icon: 'book',      route: '/learn' },
+    { label: 'nav.repeat',   icon: 'repeat',    route: '/repeat' },
+    { label: 'nav.progress', icon: 'bar-chart', route: '/progress' },
   ];
 
   isActive(route: string): boolean {

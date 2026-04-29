@@ -40,6 +40,7 @@ export interface TelegramUser {
   first_name: string;
   last_name?: string;
   username?: string;
+  language_code?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -60,6 +61,10 @@ export class TelegramService {
 
   get colorScheme(): 'light' | 'dark' {
     return this.tg?.colorScheme ?? 'light';
+  }
+
+  get languageCode(): string {
+    return this.tg?.initDataUnsafe?.user?.language_code ?? 'uk';
   }
 
   ready() { this.tg?.ready(); }

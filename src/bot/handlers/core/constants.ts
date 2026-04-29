@@ -31,6 +31,8 @@ export const COMMANDS = {
   I_HAVE_LEARNED_BUTTON: '/iHaveLearnedButton_',
   I_NEED_TO_LEARN: '/iNeedToLearn_',
 
+  REMIND_LATER: '/remindLater',
+
   // Pagination
   PREVIOUS_PAGE: '/previousPage_',
   NEXT_PAGE: '/nextPage_',

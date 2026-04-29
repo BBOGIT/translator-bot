@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { WordsApiService } from '../../core/api/words.api';
@@ -16,20 +17,20 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
 @Component({
   selector: 'app-practice',
   standalone: true,
-  imports: [CommonModule, FormsModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, SkeletonComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, IconsComponent, BottomNavComponent, ScreenHdrComponent, SkeletonComponent],
   template: `
     <div class="screen">
 
       <!-- LIST MODE -->
       <ng-container *ngIf="mode() === 'list'">
-        <app-screen-hdr title="Practice Words" [showBack]="true" (back)="goBack()">
+        <app-screen-hdr [title]="'practice.header' | translate" [showBack]="true" (back)="goBack()">
           <span class="count-badge" *ngIf="!loading()">{{ filtered().length }}</span>
         </app-screen-hdr>
 
         <!-- Search -->
         <div class="search-wrap">
           <app-icon name="search" [size]="16" class="search-icon"></app-icon>
-          <input class="search-input" type="text" placeholder="Search..."
+          <input class="search-input" type="text" [placeholder]="'practice.search_placeholder' | translate"
             [(ngModel)]="query" (ngModelChange)="onSearch($event)">
           <button class="clear-btn" *ngIf="query" (click)="clearSearch()">
             <app-icon name="x" [size]="14"></app-icon>
@@ -46,16 +47,16 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
         <!-- Empty state -->
         <div class="empty-state" *ngIf="!loading() && allWords().length === 0">
           <span class="empty-emoji">🎯</span>
-          <h3>No words to practice</h3>
-          <p>All your words are learned. Add new ones to keep practicing.</p>
-          <button class="btn btn-primary" (click)="navigate('/learn')">Add Words</button>
+          <h3>{{ 'practice.empty_title' | translate }}</h3>
+          <p>{{ 'practice.empty_sub' | translate }}</p>
+          <button class="btn btn-primary" (click)="navigate('/learn')">{{ 'practice.add_btn' | translate }}</button>
         </div>
 
         <!-- No results -->
         <div class="empty-state" *ngIf="!loading() && allWords().length > 0 && filtered().length === 0">
           <span class="empty-emoji">🔍</span>
-          <h3>No results</h3>
-          <p>Try a different search term.</p>
+          <h3>{{ 'practice.no_results_title' | translate }}</h3>
+          <p>{{ 'practice.no_results_sub' | translate }}</p>
         </div>
 
         <!-- Word list -->
@@ -79,14 +80,14 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
         <div class="start-wrap" *ngIf="!loading() && filtered().length > 0">
           <button class="btn btn-primary btn-full start-btn" (click)="startSession()">
             <app-icon name="repeat" [size]="18" style="color:#fff"></app-icon>
-            Start Session ({{ filtered().length }} words)
+            {{ 'practice.start_session' | translate:{ count: filtered().length } }}
           </button>
         </div>
       </ng-container>
 
       <!-- SESSION MODE -->
       <ng-container *ngIf="mode() === 'session'">
-        <app-screen-hdr title="Practice" [showBack]="true" (back)="backToList()">
+        <app-screen-hdr [title]="'practice.session_header' | translate" [showBack]="true" (back)="backToList()">
           <span class="counter" *ngIf="!sessionDone()">{{ currentIndex() + 1 }}/{{ sessionWords().length }}</span>
         </app-screen-hdr>
 
@@ -95,21 +96,21 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           <div class="done-circle">
             <app-icon name="check" [size]="40" style="color:#fff"></app-icon>
           </div>
-          <h2>Session Complete!</h2>
-          <p>You reviewed {{ sessionWords().length }} words</p>
+          <h2>{{ 'practice.session_complete' | translate }}</h2>
+          <p>{{ 'practice.reviewed' | translate:{ count: sessionWords().length } }}</p>
           <div class="done-stats">
             <div class="done-stat">
               <span class="done-num success">{{ learnedCount() }}</span>
-              <span class="done-label">Got it</span>
+              <span class="done-label">{{ 'practice.got_it_label' | translate }}</span>
             </div>
             <div class="done-stat">
               <span class="done-num warning">{{ practiceCount() }}</span>
-              <span class="done-label">Need Practice</span>
+              <span class="done-label">{{ 'practice.need_practice_label' | translate }}</span>
             </div>
           </div>
           <div class="done-actions">
-            <button class="btn btn-primary btn-full" (click)="restartSession()">Practice Again</button>
-            <button class="btn btn-secondary btn-full" (click)="backToList()">Back to List</button>
+            <button class="btn btn-primary btn-full" (click)="restartSession()">{{ 'practice.practice_again' | translate }}</button>
+            <button class="btn btn-secondary btn-full" (click)="backToList()">{{ 'practice.back_to_list' | translate }}</button>
           </div>
         </div>
 
@@ -134,7 +135,7 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
               <div class="card-face front">
                 <span class="lang-tag">English</span>
                 <span class="word-big" [style.font-size]="wordFontSize()">{{ currentWord()!.word }}</span>
-                <span class="tap-hint">Tap to reveal</span>
+                <span class="tap-hint">{{ 'practice.tap_to_reveal' | translate }}</span>
               </div>
               <div class="card-face back">
                 <span class="translation-big" [style.font-size]="translationFontSize()">{{ currentWord()!.translation }}</span>
@@ -159,8 +160,8 @@ import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.com
           </div>
 
           <div class="card-actions" *ngIf="flipped()">
-            <button class="btn btn-warn" (click)="markResult('practice')">Need Practice</button>
-            <button class="btn btn-success" (click)="markResult('learned')">Got it ✓</button>
+            <button class="btn btn-warn" (click)="markResult('practice')">{{ 'practice.need_practice' | translate }}</button>
+            <button class="btn btn-success" (click)="markResult('learned')">{{ 'practice.got_it' | translate }}</button>
           </div>
         </div>
       </ng-container>

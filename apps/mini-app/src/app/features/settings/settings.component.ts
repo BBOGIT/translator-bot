@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Location } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { ScreenHdrComponent } from '../../shared/components/screen-hdr/screen-hdr.component';
 import { IconsComponent } from '../../shared/components/icons/icons.component';
 import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
@@ -12,16 +12,16 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ScreenHdrComponent, IconsComponent, ToggleComponent, ScheduleSheetComponent, BottomNavComponent],
+  imports: [CommonModule, TranslateModule, ScreenHdrComponent, IconsComponent, ToggleComponent, ScheduleSheetComponent, BottomNavComponent],
   template: `
     <div class="screen">
-      <app-screen-hdr title="Settings" [showBack]="true" [hideSettings]="true" (back)="goBack()"></app-screen-hdr>
+      <app-screen-hdr [title]="'settings.header' | translate" [showBack]="true" [hideSettings]="true" (back)="goBack()"></app-screen-hdr>
 
       <div class="screen-content" style="padding-top:16px">
 
         <!-- Time display card -->
         <div class="time-card card anim-slide-up">
-          <span class="time-label">Daily Reminder</span>
+          <span class="time-label">{{ 'settings.daily_reminder' | translate }}</span>
           <span class="time-display">{{ reminderTime() }}</span>
         </div>
 
@@ -32,8 +32,8 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
               <app-icon name="bell" [size]="20" [style.color]="notificationsOn() ? 'var(--primary)' : 'var(--text-3)'"></app-icon>
             </div>
             <div class="toggle-info">
-              <span class="toggle-title">Notifications</span>
-              <span class="toggle-sub">Get daily reminders</span>
+              <span class="toggle-title">{{ 'settings.notifications' | translate }}</span>
+              <span class="toggle-sub">{{ 'settings.notifications_sub' | translate }}</span>
             </div>
             <app-toggle [(value)]="notificationsOn" (valueChange)="onToggle($event)"></app-toggle>
           </div>
@@ -45,14 +45,14 @@ import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-na
             <div class="link-icon blue">
               <app-icon name="clock" [size]="18" style="color:#fff"></app-icon>
             </div>
-            <span class="link-label">Repetition Schedule</span>
+            <span class="link-label">{{ 'settings.repetition_schedule' | translate }}</span>
             <app-icon name="chev-r" [size]="16" style="color:var(--text-3)"></app-icon>
           </div>
         </div>
 
         <button class="btn btn-primary btn-full anim-slide-up d3"
                 [class.pulse]="saved()" (click)="save()">
-          {{ saved() ? 'Saved ✓' : 'Save Settings' }}
+          {{ saved() ? ('settings.saved' | translate) : ('settings.save' | translate) }}
         </button>
       </div>
     </div>
